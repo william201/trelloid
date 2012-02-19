@@ -28,17 +28,17 @@ import com.androidquery.callback.AjaxStatus;
 
 public class BoardActivity extends ListActivity {
 	private static final String serverTrello = "https://api.trello.com";
-	private String testKey="5ab5ad43320989a74b677ab82a349db2";
-	private String testToken="40c575a5aeed5826d29241019f470218bf31bdacc94a32f7597fd4684b7e8f70";
-
+	
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		
+	public void onCreate(Bundle savedInstanceState) {	
 		super.onCreate(savedInstanceState);
-
+		String boardId = getIntent().getStringExtra("boardId");
+		if (boardId == null) {
+			boardId = "4f3fa1c0b23069041241fbfc";
+		}
 		String trelloQuery=serverTrello+BoardContainer.apiCall;
 		String currentMemberID="me";
-		String trelloBoardsURL=MessageFormat.format(trelloQuery,currentMemberID,testKey,testToken);
+		String trelloBoardsURL=MessageFormat.format(trelloQuery,currentMemberID,SplashScreenActivity.testKey,SplashScreenActivity.testToken);
 		AQuery aq = new AQuery(this);
 		aq.ajax(trelloBoardsURL, JSONArray.class, this, "jsonBoardListCallback");
 	}
