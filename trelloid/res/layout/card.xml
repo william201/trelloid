@@ -8,15 +8,14 @@
         android:id="@+id/title"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Title"
+        android:text="Loading..."
         android:textSize="25sp"
         android:gravity="center" />
 
     <TextView
         android:id="@+id/description"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="Description" />
+        android:layout_height="wrap_content" />
     
     <ListView android:layout_width="fill_parent"
         android:layout_height="0dip"
