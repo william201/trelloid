@@ -10,8 +10,19 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+/**
+ * URL per ottenere il token orario
+ * @see https://trello.com/1/appKey/generate
+ * 
+ */
 public class SplashScreenActivity extends ListActivity {
 
+	//created Sun Feb 19 11:05:42 CET 2012
+	private static String testKey="9bd5f87e01424e4cae086ea481513c86";
+	private static String testToken="ef5d11bd557e2e97f4977b71fdf0be631403c57e75782812a2529cc060d9449b";
+
+	
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
