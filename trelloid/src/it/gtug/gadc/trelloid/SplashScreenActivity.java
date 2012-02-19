@@ -20,6 +20,10 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+/**
+ * Per generare un token orario
+ * @see https://trello.com/1/appKey/generate
+ */
 public class SplashScreenActivity extends ListActivity {
 
     private final static String key = "5ab5ad43320989a74b677ab82a349db2";
