@@ -17,6 +17,15 @@ public class CardContainer {
 
 	private List<Card> cards;
 
+	public CardContainer() {
+
+	}
+
+	public CardContainer(String name) {
+		super();
+		this.name = name;
+	}
+
 	public String getId() {
 		return id;
 	}
