@@ -34,9 +34,8 @@ public class ContainerAdapter extends ArrayAdapter<CardContainer> {
 		return allContainer.size();
 	}
 
-	public CardContainer getItem(int position) {
-		allContainer.get(position);
-		return null;
+	public CardContainer getItem(int position) {		
+		return allContainer.get(position);
 	}
 
 
@@ -52,7 +51,7 @@ public class ContainerAdapter extends ArrayAdapter<CardContainer> {
 		}
 		CardContainer prova=getItem(position);
 
-		ImageView listIcon = (ImageView) row.findViewById(R.id.list_icon);
+		ImageView listIcon = (ImageView) row.findViewById(R.id.list_icon );
 		TextView listName = (TextView) row.findViewById(R.id.list_name);
 		
 		listName.setText(prova.getName());
