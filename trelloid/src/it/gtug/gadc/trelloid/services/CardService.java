@@ -1,4 +1,7 @@
-package it.gtug.gadc.trelloid.model;
+package it.gtug.gadc.trelloid.services;
+
+import it.gtug.gadc.trelloid.model.Card;
+import it.gtug.gadc.trelloid.model.Comment;
 
 import java.util.List;
 

@@ -1,8 +1,8 @@
 package it.gtug.gadc.trelloid;
 
 import it.gtug.gadc.trelloid.model.Card;
-import it.gtug.gadc.trelloid.model.CardService;
 import it.gtug.gadc.trelloid.model.Comment;
+import it.gtug.gadc.trelloid.services.CardService;
 
 import java.util.List;
 
@@ -40,7 +40,7 @@ public class CardActivity extends ListActivity {
 				"https://api.trello.com");
 
 		String key = "1b59bc31a7420d12ce644d7d822161a2";
-		String token = "8ac61ef911cb250c6f6b25e0a9ca2842409ef8355eb1775c494aebb924cd5dfa";
+		String token = "56891c779696c37f4bf28fdfac62c2c6b8f66ad52cb53eeaf4d43eb6c1ebbd65";
 		Card card = service.getCard(cardId, key, token);
 		List<Comment> comments = service.getComments(cardId, key, token,
 				"commentCard");

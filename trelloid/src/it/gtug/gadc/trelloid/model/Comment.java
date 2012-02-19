@@ -1,5 +1,8 @@
 package it.gtug.gadc.trelloid.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -7,14 +10,11 @@ public class Comment {
 	private String id;
 	private String name;
 	private String idMemberCreator;
-	private String text;
+
+	private Map<Object, Object> data = new HashMap<Object, Object>();
 
 	public String getText() {
-		return text;
-	}
-
-	public void setText(String text) {
-		this.text = text;
+		return (String) data.get("text");
 	}
 
 	public String getId() {
@@ -43,6 +43,14 @@ public class Comment {
 
 	@Override
 	public String toString() {
-		return text;
+		return getText();
+	}
+
+	public Map<Object, Object> getData() {
+		return data;
+	}
+
+	public void setData(Map<Object, Object> data) {
+		this.data = data;
 	}
 }
