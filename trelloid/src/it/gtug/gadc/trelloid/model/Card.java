@@ -1,11 +1,15 @@
 package it.gtug.gadc.trelloid.model;
 
+import java.util.List;
+
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Card {
 	private String id;
 	private String name;
+	private String desc;
+	private List<Comment> comments;
 
 	public String getId() {
 		return id;
@@ -21,6 +25,22 @@ public class Card {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getDesc() {
+		return desc;
+	}
+
+	public void setDesc(String desc) {
+		this.desc = desc;
+	}
+
+	public List<Comment> getComments() {
+		return comments;
+	}
+
+	public void setComments(List<Comment> comments) {
+		this.comments = comments;
 	}
 
 }
