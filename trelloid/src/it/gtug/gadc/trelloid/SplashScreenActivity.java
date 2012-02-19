@@ -4,8 +4,11 @@ import it.gtug.gadc.trelloid.model.Board;
 import it.gtug.gadc.trelloid.model.CardContainer;
 import it.gtug.gadc.trelloid.services.BoardService;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.resteasy.client.ProxyFactory;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
@@ -18,8 +21,9 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.SimpleAdapter;
+import android.widget.TextView;
 
 import com.androidquery.AQuery;
 
@@ -30,6 +34,7 @@ import com.androidquery.AQuery;
  */
 public class SplashScreenActivity extends ListActivity {
 
+	private static final String DEMO_BOARD = "4f3f6245e4b1f2a0023665c8";
 	private final static String key = "9bd5f87e01424e4cae086ea481513c86";
 	public final static String testKey = "1b59bc31a7420d12ce644d7d822161a2";
 	public final static String testToken = "a30c5f4656e4003a9a84c36a25fda4f8152d3069c39a356d915cb0dcbc094e72";
@@ -40,43 +45,27 @@ public class SplashScreenActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		RegisterBuiltin.register(ResteasyProviderFactory.getInstance());
 
-		// MemberService service = ProxyFactory.create(MemberService.class,
-		// "https://api.trello.com");
-		// BoardService boardService = ProxyFactory.create(BoardService.class,
-		// "https://api.trello.com");
-		//
-		// List<Board> boards = service.listMemberBoards("fabriziooo", key);
-		//
-		// for (Board board : boards) {
-		// System.err.println("id: " + board.getId());
-		// System.err.println("desc: " + board.getName());
-		//
-		// List<CardContainer> listOfCardContainer = boardService
-		// .findListsForBoard(board.getId(), key);
-		//
-		// for (CardContainer cardContainer : listOfCardContainer) {
-		// System.err.println("\tid: " + cardContainer.getId());
-		// System.err.println("\tdesc: " + cardContainer.getName());
-		//
-		// for (Card card : cardContainer.getCards()) {
-		// System.err.println("\t\tid: " + card.getId());
-		// System.err.println("\t\tdesc: " + card.getName());
-		//
-		// }
-		//
-		// }
-		//
-		// }
-
 		List<Class<?>> l = Arrays.<Class<?>> asList(BoardListActivity.class,
 				BoardActivity.class, CardActivity.class);
-		setListAdapter(new ArrayAdapter<Class<?>>(this,
-				android.R.layout.simple_list_item_1, l));
+		ArrayList<Map<String, Object>> listaBoards = new ArrayList<Map<String, Object>>();
+		
+		
+		HashMap<String, Object> demoBoard=new HashMap<String, Object>();
+		demoBoard.put("titolo", "TrelloAndroid");
+		demoBoard.put("descrizione","L'unica board pubblica che usiamo");
+		listaBoards.add(demoBoard);
+		
+		String[] from = { "titolo", "descrizione"};
+        int[] views = { android.R.id.text1, android.R.id.text2 };
+        
+		HashMap<String, Object> elements= new HashMap<String,Object >();
+		elements.put("titoloBoard", "L'unica board pubblica disponibile");
+		setListAdapter(new SimpleAdapter(this,listaBoards, android.R.layout.two_line_list_item, from,views));
 
 	}
 
 	@Override
-	protected void onListItemClick(ListView l, View v, final int position, long id) {
+	protected void onListItemClick(final ListView l, final View v, final int position, long id) {
 		super.onListItemClick(l, v, position, id);
 		
 		showDialog(DIALOG_PROGRESS);
@@ -85,31 +74,29 @@ public class SplashScreenActivity extends ListActivity {
 
 			@Override
 			protected Board doInBackground(Void... params) {
-				Board board = getBoard("4f3f6245e4b1f2a0023665c8");
+				Board board = getBoard(DEMO_BOARD);
 				return board;
 			}
 
 			protected void onPostExecute(Board board) {
-				AQuery aq = new AQuery(SplashScreenActivity.this);
-
-//				aq.id(R.id.title).text(card.getName());
-//				aq.id(R.id.description).text(card.getDesc());
-//
-//				ArrayAdapter<Comment> arrayAdapter = new CommentAdapter(
-//						CardActivity.this, R.layout.comment, R.id.text,
-//						card.getComments());
-//				setListAdapter(arrayAdapter);
-				Class<?> c = (Class<?>) getListAdapter().getItem(position);
-				Intent intent = new Intent();
-				intent.setClass(SplashScreenActivity.this, c);
+				//AQuery aq = new AQuery(SplashScreenActivity.this);
 				
-
+				/*Scusate ma non mi piaceva proprio scegliere l'activity da lanciare per mezzo di una lista di classi*/
+				//Class<?> c = (Class<?>) getListAdapter().getItem(position);
+				
+				//intent.setClass(SplashScreenActivity.this, c);
+//				View view=(View)l.getItemAtPosition(position);
+//				TextView titleView=(TextView)view.findViewById(android.R.id.text1);
+				
+				Intent intent = new Intent();
+				intent.setClass(SplashScreenActivity.this, BoardActivity.class);
 				//FIXME: Ricordarsi di estrarre il titolo dalla view una volta implementato un custom layout
-				intent.putExtra("title", "NO_TITLE");
+				intent.putExtra("title","TrelloAndroid");
 				intent.putExtra("board", board);
+				intent.putExtra("boardId", DEMO_BOARD);
 				dismissDialog(DIALOG_PROGRESS);
 				startActivity(intent);
-			}
+			}			
 
 		}.execute();
 		
