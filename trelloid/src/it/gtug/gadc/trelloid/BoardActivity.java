@@ -41,7 +41,7 @@ public class BoardActivity extends ListActivity {
 		List<CardContainer> lists = service.findListsForBoard(boardId, SplashScreenActivity.testKey);
 
 		Board board = new Board();
-		board.setId(lists.get(0).getIdParentBoard());
+		board.setId(lists.get(0).getIdBoard());
 		board.setContainers(lists);
 		
 		return board;
