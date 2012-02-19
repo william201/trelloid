@@ -1,5 +1,8 @@
 package it.gtug.gadc.trelloid.model;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Card {
 	private String id;
 	private String name;

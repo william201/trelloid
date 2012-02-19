@@ -2,6 +2,9 @@ package it.gtug.gadc.trelloid.model;
 
 import java.util.List;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Board {
 	
 	private String id;
@@ -9,6 +12,10 @@ public class Board {
 
 	private List<CardContainer> containers;
 
+	public Board() {
+		
+	}
+	
 	public Board(String id, String name) {
 		this.id=id;
 		this.name=name;
