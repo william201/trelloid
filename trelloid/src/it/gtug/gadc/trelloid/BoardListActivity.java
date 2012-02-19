@@ -28,8 +28,8 @@ import com.androidquery.callback.AjaxStatus;
 
 public class BoardListActivity extends ListActivity {
 	private static final String serverTrello = "https://api.trello.com";
-	private String testKey="5ab5ad43320989a74b677ab82a349db2";
-	private String testToken="40c575a5aeed5826d29241019f470218bf31bdacc94a32f7597fd4684b7e8f70";
+	private String testKey="9bd5f87e01424e4cae086ea481513c86";
+	private String testToken="ef5d11bd557e2e97f4977b71fdf0be631403c57e75782812a2529cc060d9449b";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
