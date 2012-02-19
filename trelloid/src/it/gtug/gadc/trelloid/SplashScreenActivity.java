@@ -26,9 +26,9 @@ import android.widget.ListView;
  */
 public class SplashScreenActivity extends ListActivity {
 
-    private final static String key = "5ab5ad43320989a74b677ab82a349db2";
-    public final static String testKey="5ab5ad43320989a74b677ab82a349db2";
-	public final static String testToken="cf3077895e0c6c523bb9b9e601fdc449258e0ae85735be5b0a2cde50dceddb9a";
+    private final static String key = "9bd5f87e01424e4cae086ea481513c86";
+    public final static String testKey="9bd5f87e01424e4cae086ea481513c86";
+	public final static String testToken="3b92413f53999b697d203734443e1c9af92be868a2be81ea541484db25aa4a22";
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {

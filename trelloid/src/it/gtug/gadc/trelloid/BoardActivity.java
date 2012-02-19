@@ -2,28 +2,14 @@ package it.gtug.gadc.trelloid;
 
 
 import it.gtug.gadc.trelloid.model.Board;
-import it.gtug.gadc.trelloid.model.BoardContainer;
-import it.gtug.gadc.trelloid.model.TrelloFactory;
-
-import java.text.MessageFormat;
-import it.gtug.gadc.trelloid.auth.TrelloHandle;
-
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.logging.Level;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import it.gtug.gadc.trelloid.model.CardContainer;
+import it.gtug.gadc.trelloid.services.BoardService;
+import java.util.List;
+import it.gtug.gadc.trelloid.R;
+import org.jboss.resteasy.client.ProxyFactory;
 import android.app.ListActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.ArrayAdapter;
-
 import com.androidquery.AQuery;
-import com.androidquery.callback.AjaxStatus;
 
 
 public class BoardActivity extends ListActivity {
@@ -36,27 +22,45 @@ public class BoardActivity extends ListActivity {
 		if (boardId == null) {
 			boardId = "4f3f6245e4b1f2a0023665c8";
 		}
-		String trelloQuery=serverTrello+BoardContainer.apiCall;
-		String currentMemberID="me";
-		String trelloBoardsURL=MessageFormat.format(trelloQuery,currentMemberID,SplashScreenActivity.testKey,SplashScreenActivity.testToken);
-		AQuery aq = new AQuery(this);
-		aq.ajax(trelloBoardsURL, JSONArray.class, this, "jsonBoardListCallback");
-	}
-
-
-	public void jsonBoardListCallback(String url, JSONArray json, AjaxStatus status) {
-		Log.d("trelloid", "jsonBoardListCallback:: " + json);
-		if (json != null) {
-			//Popolare il modello
-			BoardContainer allBoards =TrelloFactory.allocate(BoardContainer.class, json);
 			
-			setListAdapter(
-					new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, allBoards.getArray() )
-					);
-		} else {
-			// ajax error 
-			//TODO: ajax error handling?
-		}
+		Board currBoard = getBoard(boardId); 
+		setContentView(R.layout.board);
+		
+		AQuery aq = new AQuery(this);
+		aq.id(R.id.boardid).text(currBoard.getId());
+		
+		
+		setListAdapter(new ContainerAdapter(this,
+				R.layout.item_list , currBoard.getContainers()  ));
+		
 	}
+
+
+	private Board getBoard(String boardId) {
+		BoardService service = ProxyFactory.create(BoardService.class,"https://api.trello.com");
+		List<CardContainer> lists = service.findListsForBoard(boardId, SplashScreenActivity.testKey);
+
+		Board board = new Board();
+		board.setId(lists.get(0).getIdParentBoard());
+		board.setContainers(lists);
+		
+		return board;
+	}
+
+//
+//	public void jsonBoardListCallback(String url, JSONArray json, AjaxStatus status) {
+//		Log.d("trelloid", "jsonBoardListCallback:: " + json);
+//		if (json != null) {
+//			//Popolare il modello
+//			BoardContainer allBoards =TrelloFactory.allocate(BoardContainer.class, json);
+//			
+//			setListAdapter(
+//					new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, allBoards.getArray() )
+//					);
+//		} else {
+//			// ajax error 
+//			//TODO: ajax error handling?
+//		}
+//	}
 	
 }
