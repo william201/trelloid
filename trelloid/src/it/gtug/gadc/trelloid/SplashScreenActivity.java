@@ -28,7 +28,7 @@ public class SplashScreenActivity extends ListActivity {
 
     private final static String key = "5ab5ad43320989a74b677ab82a349db2";
     public final static String testKey="5ab5ad43320989a74b677ab82a349db2";
-	public final static String testToken="40c575a5aeed5826d29241019f470218bf31bdacc94a32f7597fd4684b7e8f70";
+	public final static String testToken="cf3077895e0c6c523bb9b9e601fdc449258e0ae85735be5b0a2cde50dceddb9a";
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
