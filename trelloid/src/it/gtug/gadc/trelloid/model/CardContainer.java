@@ -4,12 +4,17 @@ import java.util.List;
 
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
+/**
+ * Questa classe rappresenta cio' che nel dominio applicativo si chiama LISTA
+ * (con all'interno le CARDS)
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CardContainer {
-	
+
+	private String idParentBoard;
 	private String id;
 	private String name;
-	
+
 	private List<Card> cards;
 
 	public String getId() {
@@ -34,5 +39,13 @@ public class CardContainer {
 
 	public void setCards(List<Card> cards) {
 		this.cards = cards;
-	}	
+	}
+
+	public String getIdParentBoard() {
+		return idParentBoard;
+	}
+
+	public void setIdParentBoard(String idParentBoard) {
+		this.idParentBoard = idParentBoard;
+	}
 }
