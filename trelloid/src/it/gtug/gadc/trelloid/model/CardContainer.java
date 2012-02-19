@@ -1,5 +1,6 @@
 package it.gtug.gadc.trelloid.model;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
@@ -9,8 +10,12 @@ import org.codehaus.jackson.annotate.JsonIgnoreProperties;
  * (con all'interno le CARDS)
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CardContainer {
+public class CardContainer implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String idBoard;
 	private String id;
 	private String name;

@@ -11,12 +11,17 @@ import org.jboss.resteasy.client.ProxyFactory;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
+import android.app.Dialog;
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.androidquery.AQuery;
 
 /**
  * Per generare un token orario
@@ -28,6 +33,7 @@ public class SplashScreenActivity extends ListActivity {
 	private final static String key = "9bd5f87e01424e4cae086ea481513c86";
 	public final static String testKey = "1b59bc31a7420d12ce644d7d822161a2";
 	public final static String testToken = "a30c5f4656e4003a9a84c36a25fda4f8152d3069c39a356d915cb0dcbc094e72";
+	private static final int DIALOG_PROGRESS = 0;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -70,17 +76,43 @@ public class SplashScreenActivity extends ListActivity {
 	}
 
 	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
+	protected void onListItemClick(ListView l, View v, final int position, long id) {
 		super.onListItemClick(l, v, position, id);
 		
-		Class<?> c = (Class<?>) getListAdapter().getItem(position);
-		Intent intent = new Intent(this, c);
-		Bundle data=new Bundle();
-		//FIMXE: Aggiungere un asincTask
-		//FIXME: Ricordarsi di estrarre il titolo dalla view una volta implementato un custom layout
-		intent.putExtra("title", "NO_TITLE");
-		intent.putExtra("board", getBoard("4f3f6245e4b1f2a0023665c8"));
-		startActivity(intent);
+		showDialog(DIALOG_PROGRESS);
+		
+		new AsyncTask<Void, Void, Board>() {
+
+			@Override
+			protected Board doInBackground(Void... params) {
+				Board board = getBoard("4f3f6245e4b1f2a0023665c8");
+				return board;
+			}
+
+			protected void onPostExecute(Board board) {
+				AQuery aq = new AQuery(SplashScreenActivity.this);
+
+//				aq.id(R.id.title).text(card.getName());
+//				aq.id(R.id.description).text(card.getDesc());
+//
+//				ArrayAdapter<Comment> arrayAdapter = new CommentAdapter(
+//						CardActivity.this, R.layout.comment, R.id.text,
+//						card.getComments());
+//				setListAdapter(arrayAdapter);
+				Class<?> c = (Class<?>) getListAdapter().getItem(position);
+				Intent intent = new Intent();
+				intent.setClass(SplashScreenActivity.this, c);
+				
+
+				//FIXME: Ricordarsi di estrarre il titolo dalla view una volta implementato un custom layout
+				intent.putExtra("title", "NO_TITLE");
+				intent.putExtra("board", board);
+				dismissDialog(DIALOG_PROGRESS);
+				startActivity(intent);
+			}
+
+		}.execute();
+		
 	}
 	private Board getBoard(String boardId) {
 		BoardService service = ProxyFactory.create(BoardService.class,"https://api.trello.com");
@@ -92,4 +124,18 @@ public class SplashScreenActivity extends ListActivity {
 		
 		return board;
 	}
+	
+	/**
+     * Gestisce le dialog che si possono aprire
+     */
+    protected Dialog onCreateDialog(int id) {
+        Dialog dialog=null;
+        switch(id) {
+        case DIALOG_PROGRESS:
+        	 dialog= ProgressDialog.show(SplashScreenActivity.this,"","Caricamento in corso...");
+        	 break;
+        default:
+        }
+        return dialog;
+    }
 }

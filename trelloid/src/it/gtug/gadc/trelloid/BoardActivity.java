@@ -1,6 +1,7 @@
 package it.gtug.gadc.trelloid;
 
 import it.gtug.gadc.trelloid.model.Board;
+import it.gtug.gadc.trelloid.model.Card;
 import it.gtug.gadc.trelloid.model.CardContainer;
 import it.gtug.gadc.trelloid.services.BoardService;
 
@@ -24,8 +25,11 @@ import com.viewpagerindicator.TabPageIndicator;
 import com.viewpagerindicator.TitleProvider;
 
 public class BoardActivity extends Activity {
+	private static final String DEMO_BOARD = "4f3f6245e4b1f2a0023665c8";
 	private final class ListContainerAdapter extends PagerAdapter implements
 			TitleProvider {
+		
+
 		@Override
 		public boolean isViewFromObject(View view, Object object) {
 			return view == object;
@@ -44,9 +48,20 @@ public class BoardActivity extends Activity {
 		@Override
 		public Object instantiateItem(ViewGroup container, int position) {
 			ListView listView = new ListView(BoardActivity.this);
+			List<String> element = new ArrayList<String>();
+			if(board.getContainers()!=null){
+				for (CardContainer cardContainer : board.getContainers()) {
+					if(DEMO_BOARD.equals(cardContainer.getIdBoard())){
+						for (Card card : cardContainer.getCards()) {
+							element.add(card.getName());
+						}
+					}
+				}
+			}else{
+				element.add("NoOne");
+			}
 			listView.setAdapter(new ArrayAdapter<String>(BoardActivity.this,
-					android.R.layout.simple_list_item_1, Arrays.asList("A",
-							"B", "C")));
+					android.R.layout.simple_list_item_1, element));
 			((ViewPager) container).addView(listView, 0);
 			return listView;
 		}
@@ -68,7 +83,7 @@ public class BoardActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		String boardId = getIntent().getStringExtra("boardId");
 		if (boardId == null) {
-			boardId = "4f3f6245e4b1f2a0023665c8";
+			boardId = DEMO_BOARD;
 		}
 
 		String title = getIntent().getStringExtra("title");
@@ -80,9 +95,9 @@ public class BoardActivity extends Activity {
 			board = new Board();
 			ArrayList<CardContainer> containers = new ArrayList<CardContainer>();
 			board.setContainers(containers);
-			containers.add(new CardContainer("ToDo"));
-			containers.add(new CardContainer("Doing"));
-			containers.add(new CardContainer("Done"));
+			containers.add(new CardContainer("ToDo - Fake"));
+			containers.add(new CardContainer("Doing - Fake"));
+			containers.add(new CardContainer("Done - Fake"));
 		}
 
 		setTitle(title);
@@ -106,18 +121,7 @@ public class BoardActivity extends Activity {
 
 	}
 
-	private Board getBoard(String boardId) {
-		BoardService service = ProxyFactory.create(BoardService.class,
-				"https://api.trello.com");
-		List<CardContainer> lists = service.findListsForBoard(boardId,
-				SplashScreenActivity.testKey);
-
-		Board board = new Board();
-		board.setId(lists.get(0).getIdBoard());
-		board.setContainers(lists);
-
-		return board;
-	}
+	
 
 	//
 	// public void jsonBoardListCallback(String url, JSONArray json, AjaxStatus

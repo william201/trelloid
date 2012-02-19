@@ -1,17 +1,22 @@
 package it.gtug.gadc.trelloid.model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Comment {
+public class Comment implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String id;
 	private String name;
 	private String idMemberCreator;
 
-	private Map<Object, Object> data = new HashMap<Object, Object>();
+	private Map<String, String> data = new HashMap<String, String>();
 
 	public String getText() {
 		return (String) data.get("text");
@@ -46,11 +51,13 @@ public class Comment {
 		return getText();
 	}
 
-	public Map<Object, Object> getData() {
+	public Map<String, String> getData() {
 		return data;
 	}
 
-	public void setData(Map<Object, Object> data) {
+	public void setData(Map<String, String> data) {
 		this.data = data;
 	}
+
+	
 }
