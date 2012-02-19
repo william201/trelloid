@@ -18,7 +18,7 @@ import javax.ws.rs.core.MediaType;
  * 
  */
 
-@Path("/1/board")
+@Path("/1/boards")
 public interface BoardService {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
