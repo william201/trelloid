@@ -1,8 +1,13 @@
 package it.gtug.gadc.trelloid;
 
+import it.gtug.gadc.trelloid.model.Board;
+import it.gtug.gadc.trelloid.model.CardContainer;
+import it.gtug.gadc.trelloid.services.BoardService;
+
 import java.util.Arrays;
 import java.util.List;
 
+import org.jboss.resteasy.client.ProxyFactory;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
@@ -67,7 +72,24 @@ public class SplashScreenActivity extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
+		
 		Class<?> c = (Class<?>) getListAdapter().getItem(position);
-		startActivity(new Intent(this, c));
+		Intent intent = new Intent(this, c);
+		Bundle data=new Bundle();
+		//FIMXE: Aggiungere un asincTask
+		//FIXME: Ricordarsi di estrarre il titolo dalla view una volta implementato un custom layout
+		intent.putExtra("title", "NO_TITLE");
+		intent.putExtra("board", getBoard("4f3f6245e4b1f2a0023665c8"));
+		startActivity(intent);
+	}
+	private Board getBoard(String boardId) {
+		BoardService service = ProxyFactory.create(BoardService.class,"https://api.trello.com");
+		List<CardContainer> lists = service.findListsForBoard(boardId, SplashScreenActivity.testKey);
+
+		Board board = new Board();
+		board.setId(lists.get(0).getIdBoard());
+		board.setContainers(lists);
+		
+		return board;
 	}
 }
