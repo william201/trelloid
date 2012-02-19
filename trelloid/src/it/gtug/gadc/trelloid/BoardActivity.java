@@ -34,7 +34,7 @@ public class BoardActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		String boardId = getIntent().getStringExtra("boardId");
 		if (boardId == null) {
-			boardId = "4f3fa1c0b23069041241fbfc";
+			boardId = "4f3f6245e4b1f2a0023665c8";
 		}
 		String trelloQuery=serverTrello+BoardContainer.apiCall;
 		String currentMemberID="me";
