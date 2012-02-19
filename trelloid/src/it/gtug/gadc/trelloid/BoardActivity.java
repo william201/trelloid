@@ -51,7 +51,7 @@ public class BoardActivity extends Activity {
 			List<String> element = new ArrayList<String>();
 			if(board.getContainers()!=null){
 				for (CardContainer cardContainer : board.getContainers()) {
-					if(DEMO_BOARD.equals(cardContainer.getIdBoard())){
+					if(getTitle(position).equals(cardContainer.getName())){
 						for (Card card : cardContainer.getCards()) {
 							element.add(card.getName());
 						}
