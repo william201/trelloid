@@ -8,25 +8,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.androidquery.AQuery;
 import com.viewpagerindicator.PageIndicator;
 import com.viewpagerindicator.TabPageIndicator;
 import com.viewpagerindicator.TitleProvider;
 
 public class BoardActivity extends Activity {
-	private final class ListContainerAdapter extends PagerAdapter implements
-			TitleProvider {
-		
+	private final class ListContainerAdapter extends PagerAdapter implements TitleProvider {
 
-		private Board board;
+		private final Board board;
 
 		@Override
 		public boolean isViewFromObject(View view, Object object) {
@@ -46,20 +45,25 @@ public class BoardActivity extends Activity {
 		@Override
 		public Object instantiateItem(ViewGroup container, int position) {
 			ListView listView = new ListView(BoardActivity.this);
-			List<String> element = new ArrayList<String>();
-			if(this.board.getContainers()!=null){
+			List<Card> element = new ArrayList<Card>();
+			if (this.board.getContainers() != null) {
 				for (CardContainer cardContainer : this.board.getContainers()) {
-					if(getTitle(position).equals(cardContainer.getName())){
+					if (getTitle(position).equals(cardContainer.getName())) {
 						for (Card card : cardContainer.getCards()) {
-							element.add(card.getName());
+							element.add(card);
 						}
 					}
 				}
-			}else{
-				element.add("NoOne");
+			} else {
 			}
-			listView.setAdapter(new ArrayAdapter<String>(BoardActivity.this,
-					android.R.layout.simple_list_item_1, element));
+			final ArrayAdapter<Card> adapter = new ArrayAdapter<Card>(BoardActivity.this, android.R.layout.simple_list_item_1, element);
+			listView.setAdapter(adapter);
+			listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+				public void onItemClick(AdapterView<?> l, View arg1, int position, long arg3) {
+					Card card = adapter.getItem(position);
+					startActivity(new Intent(BoardActivity.this, CardActivity.class).putExtra("cardId", card.getId()));
+				}
+			});
 			((ViewPager) container).addView(listView, 0);
 			return listView;
 		}
@@ -78,12 +82,10 @@ public class BoardActivity extends Activity {
 				containers.add(new CardContainer("Doing - Fake"));
 				containers.add(new CardContainer("Done - Fake"));
 			}
-			this.board=board;
+			this.board = board;
 		}
-		
-	}
 
-	
+	}
 
 	ViewPager mPager;
 	PageIndicator mIndicator;
@@ -92,14 +94,11 @@ public class BoardActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.board);
-		
-		String boardId = getIntent().getStringExtra("boardId");
+
 		String title = getIntent().getStringExtra("title");
-		
-		 AQuery aq = new AQuery(this);
-		 aq.id(R.id.boardid).text(boardId);
-		 aq.id(R.id.boardtitle).text(title);
-		
+
+		setTitle(title);
+
 		mPager = (ViewPager) findViewById(R.id.pager);
 		mPager.setAdapter(new ListContainerAdapter((Board) getIntent().getSerializableExtra("board")));
 

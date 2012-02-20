@@ -1,13 +1,11 @@
 package it.gtug.gadc.trelloid.model;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Comment implements Serializable{
+public class Comment implements Serializable {
 	/**
 	 * 
 	 */
@@ -16,10 +14,10 @@ public class Comment implements Serializable{
 	private String name;
 	private String idMemberCreator;
 
-	private Map<String, String> data = new HashMap<String, String>();
+	private Data data;
 
 	public String getText() {
-		return (String) data.get("text");
+		return data.getText();
 	}
 
 	public String getId() {
@@ -51,13 +49,12 @@ public class Comment implements Serializable{
 		return getText();
 	}
 
-	public Map<String, String> getData() {
+	public Data getData() {
 		return data;
 	}
 
-	public void setData(Map<String, String> data) {
+	public void setData(Data data) {
 		this.data = data;
 	}
 
-	
 }

@@ -6,7 +6,7 @@ import java.util.List;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Card implements Serializable{
+public class Card implements Serializable {
 	/**
 	 * 
 	 */
@@ -46,6 +46,11 @@ public class Card implements Serializable{
 
 	public void setComments(List<Comment> comments) {
 		this.comments = comments;
+	}
+
+	@Override
+	public String toString() {
+		return name;
 	}
 
 }

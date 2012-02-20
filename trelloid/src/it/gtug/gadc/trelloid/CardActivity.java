@@ -27,8 +27,7 @@ public class CardActivity extends ListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		String stringExtra = getIntent().getStringExtra("cardId");
-		final String cardId = stringExtra != null ? stringExtra
-				: "4f3fa1c0b23069041241fbfc";
+		final String cardId = stringExtra != null ? stringExtra : "4f3fa1c0b23069041241fbfc";
 		setContentView(R.layout.card);
 
 		new AsyncTask<Void, Void, Card>() {
@@ -42,15 +41,14 @@ public class CardActivity extends ListActivity {
 				return card;
 			}
 
+			@Override
 			protected void onPostExecute(Card card) {
 				AQuery aq = new AQuery(CardActivity.this);
 
 				aq.id(R.id.title).text(card.getName());
 				aq.id(R.id.description).text(card.getDesc());
 
-				ArrayAdapter<Comment> arrayAdapter = new CommentAdapter(
-						CardActivity.this, R.layout.comment, R.id.text,
-						card.getComments());
+				ArrayAdapter<Comment> arrayAdapter = new CommentAdapter(CardActivity.this, R.layout.comment, R.id.text, card.getComments());
 				setListAdapter(arrayAdapter);
 			}
 
@@ -58,14 +56,10 @@ public class CardActivity extends ListActivity {
 	}
 
 	private Card getCard(String cardId) {
-		CardService service = ProxyFactory.create(CardService.class,
-				"https://api.trello.com");
+		CardService service = ProxyFactory.create(CardService.class, "https://api.trello.com");
 
-		Card card = service.getCard(cardId, SplashScreenActivity.testKey,
-				SplashScreenActivity.testToken);
-		List<Comment> comments = service.getComments(cardId,
-				SplashScreenActivity.testKey, SplashScreenActivity.testToken,
-				"commentCard");
+		Card card = service.getCard(cardId, SplashScreenActivity.testKey);
+		List<Comment> comments = service.getComments(cardId, SplashScreenActivity.testKey, "commentCard");
 		card.setComments(comments);
 		return card;
 	}
@@ -75,21 +69,19 @@ public class CardActivity extends ListActivity {
 		Map<String, Member> membersCache = application.getMembersCache();
 		Member member = membersCache.get(idMemberCreator);
 		if (member == null) {
-			MemberService memberService = ProxyFactory.create(
-					MemberService.class, "https://api.trello.com");
-			member = memberService.findMembers(idMemberCreator,
-					SplashScreenActivity.testKey);
+			MemberService memberService = ProxyFactory.create(MemberService.class, "https://api.trello.com");
+			member = memberService.findMembers(idMemberCreator, SplashScreenActivity.testKey);
 			membersCache.put(idMemberCreator, member);
 		}
 		return member;
 	}
 
 	private final class CommentAdapter extends ArrayAdapter<Comment> {
-		private CommentAdapter(Context context, int resource,
-				int textViewResourceId, List<Comment> objects) {
+		private CommentAdapter(Context context, int resource, int textViewResourceId, List<Comment> objects) {
 			super(context, resource, textViewResourceId, objects);
 		}
 
+		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			View view = super.getView(position, convertView, parent);
 
@@ -97,10 +89,7 @@ public class CardActivity extends ListActivity {
 
 			Member member = getMember(getItem(position).getIdMemberCreator());
 			if (member.getAvatarHash() != null) {
-				aq.id(R.id.avatar)
-						.visible()
-						.image("https://trello-avatars.s3.amazonaws.com/"
-								+ member.getAvatarHash() + "/30.png");
+				aq.id(R.id.avatar).visible().image("https://trello-avatars.s3.amazonaws.com/" + member.getAvatarHash() + "/30.png");
 				aq.id(R.id.initial).invisible();
 			} else {
 				aq.id(R.id.initial).visible().text(member.getInitials());
