@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="gen"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+	<classpathentry kind="lib" path="libs/android-query.0.20.6.jar"/>
+	<classpathentry kind="lib" path="libs/android-query-auth.0.20.6.jar"/>
+	<classpathentry kind="lib" path="libs/signpost-commonshttp4-1.2.1.1.jar"/>
+	<classpathentry kind="lib" path="libs/signpost-core-1.2.1.1.jar"/>
+	<classpathentry kind="lib" path="libs/resteasy-mobile-1.0.0.jar" sourcepath="libs/resteasy-mobile-1.0.0-sources.jar"/>
+	<classpathentry kind="lib" path="libs/jaxrs-api-2.3.0.GA.jar" sourcepath="libs/jaxrs-api-2.3.0.GA-sources.jar"/>
+	<classpathentry kind="lib" path="libs/jackson-core-asl-1.8.5.jar" sourcepath="libs/jackson-core-asl-1.8.5-sources.jar"/>
+	<classpathentry kind="lib" path="libs/jackson-jaxrs-1.8.5.jar" sourcepath="libs/jackson-jaxrs-1.8.5-sources.jar"/>
+	<classpathentry kind="lib" path="libs/jackson-mapper-asl-1.8.5.jar" sourcepath="libs/jackson-mapper-asl-1.8.5-sources.jar"/>
+	<classpathentry kind="lib" path="libs/jackson-xc-1.8.5.jar" sourcepath="libs/jackson-xc-1.8.5-sources.jar"/>
+	<classpathentry kind="output" path="bin/classes"/>
+</classpath>
