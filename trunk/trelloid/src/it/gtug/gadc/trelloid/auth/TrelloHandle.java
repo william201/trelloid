@@ -116,7 +116,7 @@ public class TrelloHandle extends AccountHandle{
                        
                         if(url != null){
                                
-                                dialog = new WebDialog(act, url, new TrelloWebViewClient());                
+                                dialog = new WebDialog(act, url + "&scope=read,write", new TrelloWebViewClient());                
                                 dialog.setOnCancelListener(this);                      
                                 show();
                                 //dialog.hide();
