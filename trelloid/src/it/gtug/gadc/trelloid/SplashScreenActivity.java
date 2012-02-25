@@ -28,10 +28,10 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
 
 import com.androidquery.AQuery;
 import com.androidquery.callback.AjaxCallback;
@@ -49,7 +49,7 @@ public class SplashScreenActivity extends Activity {
 	public final static String testToken = "a30c5f4656e4003a9a84c36a25fda4f8152d3069c39a356d915cb0dcbc094e72";
 	
 	
-	private static final String TRELLOID_TOKEN = "aq.trelloid.token";
+	public static final String TRELLOID_TOKEN = "aq.trelloid.token";
     private static final String TRELLOID_SECRET = "aq.trelloid.secret";
     
     
@@ -59,7 +59,7 @@ public class SplashScreenActivity extends Activity {
     /**
      * QUeste sono del mio account, pprovate a cambiarle con il vostro
      */
-    private static final String CONSUMER_KEY="0f67a93d8fd77b03601a79c0b8773ef7";
+    public static final String CONSUMER_KEY="0f67a93d8fd77b03601a79c0b8773ef7";
     private static final String CONSUMER_SECRET="2b6b7c10123436e30aecd2a43a28ec8d4db4bc9132164e9b110ab279238af27d";
 	private static final int DIALOG_PROGRESS = 0;
 
