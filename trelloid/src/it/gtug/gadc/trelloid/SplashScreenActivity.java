@@ -3,7 +3,9 @@ package it.gtug.gadc.trelloid;
 import it.gtug.gadc.trelloid.auth.TrelloHandle;
 import it.gtug.gadc.trelloid.model.Board;
 import it.gtug.gadc.trelloid.model.CardContainer;
+import it.gtug.gadc.trelloid.model.Member;
 import it.gtug.gadc.trelloid.services.BoardService;
+import it.gtug.gadc.trelloid.services.MemberService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,17 +53,23 @@ public class SplashScreenActivity extends Activity {
 	
 	public static final String TRELLOID_TOKEN = "aq.trelloid.token";
     private static final String TRELLOID_SECRET = "aq.trelloid.secret";
+    private static final String TRELLOID_MEMBER_ID = "aq.trelloid.secret";
     
     
-//   private static final String CONSUMER_KEY=key;
-//   private static final String CONSUMER_SECRET=testToken;
-    
+   
     /**
      * QUeste sono del mio account, pprovate a cambiarle con il vostro
      */
-    public static final String CONSUMER_KEY="0f67a93d8fd77b03601a79c0b8773ef7";
-    private static final String CONSUMER_SECRET="2b6b7c10123436e30aecd2a43a28ec8d4db4bc9132164e9b110ab279238af27d";
+//    public static final String CONSUMER_KEY="0f67a93d8fd77b03601a79c0b8773ef7";
+//    private static final String CONSUMER_SECRET="2b6b7c10123436e30aecd2a43a28ec8d4db4bc9132164e9b110ab279238af27d";
+    
+    //SOno i secret di Trelloid ;)
+    public static final String CONSUMER_KEY="287616866fb290d0ede084f648112848";
+  	private static final String CONSUMER_SECRET="fb29e30637c7a10b595d42879bd08f529f65479eafd11449aff787bc749b58ea";
+    
+	private static final String APP_NAME = "Trelloid";
 	private static final int DIALOG_PROGRESS = 0;
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -133,7 +141,7 @@ public class SplashScreenActivity extends Activity {
 	 * @param view
 	 */
 	 public void showToken(View view){
-	         String token= PreferenceManager.getDefaultSharedPreferences(this).getString(TRELLOID_TOKEN, null);
+	         String token= getMyToken();
 	        showToast("Token:"+token);
 	 }
 	 /**
@@ -149,44 +157,54 @@ public class SplashScreenActivity extends Activity {
 		    
 	        showToast("Credenziali pulite");
 	 }
+	 public void showMainPreferences(View view){
+		 Intent settingsActivity = new Intent(getBaseContext(),
+                 MainPreferencesActivity.class);
+		 startActivity(settingsActivity);
+	 }
 	 /**
 	  * Prende in carico la visualizzazione e la gestione dell'autenticazione
 	  * Ha come parametro view per essere richiamato dall'onclick nel layout
 	  * @param view
 	  */
 	public void authTrello(View view){
-       
 		
-       TrelloHandle handler = new TrelloHandle(this, CONSUMER_KEY, CONSUMER_SECRET){
-           
-//           @Override
-//			public boolean authenticated() {
-//                   if(token!=null){
-//                   Context context = getApplicationContext();
-//	           		CharSequence text = "Authenticated!Token:"+fetchStoredPreference(TRELLOID_TOKEN);
-//	           		int duration = Toast.LENGTH_LONG;
-//	
-//	           		Toast toast = Toast.makeText(context, text, duration);
-//	           		toast.show();
-//                   }
-//	           		return token != null && secret != null;
-//	           		
-//           }
-           
-           
-   };
+       TrelloHandle handler = new TrelloHandle(this, CONSUMER_KEY, CONSUMER_SECRET);
+        handler.setAppName(SplashScreenActivity.APP_NAME);
+        handler.setScope(PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getString(MainPreferencesActivity.AUTH_TYPE_PREF, "read,write"));
+        handler.setExpiration(PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getString(MainPreferencesActivity.AUTH_EXPIRE_PREF, "30days"));
         
-        String url = "https://trello.com/1/authorize?key="+CONSUMER_KEY+"&name=Trelloid&response_type=fragment&expiration=1day&scope=read,write";
+        String url = "https://trello.com/1/authorize?key="+CONSUMER_KEY+"&response_type=fragment";
         AQuery aq = new AQuery(SplashScreenActivity.this);
-        aq.auth(handler).ajax(url, JSONObject.class, new AjaxCallback<JSONObject>(){});
+        ProgressDialog authDialog=new ProgressDialog(this);
+        authDialog.setIndeterminate(true);
+        authDialog.setCancelable(false);
+        authDialog.setInverseBackgroundForced(false);
+        authDialog.setCanceledOnTouchOutside(true);
+        authDialog.setTitle("Loading..");
+        authDialog.setMessage("Colloquio con il server Trello in corso.."); 
         
-
-   
-   
-        
+        aq.auth(handler).progress(authDialog).ajax(url, JSONObject.class, new AjaxCallback<JSONObject>(){
+        	
+        	
+        });     
         
 	}
 	
+	/**
+	 * Questo va implementato in asincrono e fatto solo dopo che abbiamo registrato nelle
+	 * preferences il token
+	 * @param view
+	 */
+	public void fetchMyBoards(View view){
+		List<Board> myBoards = getMyBoards();
+		showToast("Ho "+myBoards.size()+ " board!");
+		int i=1;
+		for (Board board : myBoards) {
+			showToast("Board"+i+": "+board.getName());
+			i++;
+		}
+	}
 	
 	
 	private Board getBoard(String boardId) {
@@ -200,6 +218,47 @@ public class SplashScreenActivity extends Activity {
 		return board;
 	}
 	
+	private List<Board> getMyBoards(){
+		MemberService service= ProxyFactory.create(MemberService.class, "https://api.trello.com");
+		Member me=getMemberMe();
+		if( me==null){
+			showToast("Occorre effettuare l'autenticazione prima. Utente me: null");
+		}
+		
+		return service.findBoardsWichHeIsMember(CONSUMER_KEY,getMyToken());
+	}
+	
+	//TODO: Troviamo una collocazione accessibile da più parti per questi metodi? CI vorrebbe un Service del Service XD
+	/**
+	 * Recupera il member a cui fa capo il token di autenticazione
+	 * @return
+	 */
+	private Member getMemberMe() {
+		String token=getMyToken();
+		if(token==null || token.length()<1){
+			
+			return null;
+		}
+		TrelloidApplication application = (TrelloidApplication) getApplication();
+
+//		Si può pensare di utilizzare la cache? COme si gestisce l'eventuale logout??
+		
+//		Map<String, Member> membersCache = application.getMembersCache();
+//		Member member = membersCache.get(idMemberCreator);
+//		if (member == null) {
+//			MemberService memberService = ProxyFactory.create(MemberService.class, "https://api.trello.com");
+//			member = memberService.findMembers(idMemberCreator, SplashScreenActivity.CONSUMER_KEY);
+//			membersCache.put(idMemberCreator, member);
+//		}
+		MemberService memberService = ProxyFactory.create(MemberService.class, "https://api.trello.com");
+		Map<String, Member> membersCache = application.getMembersCache();
+		Member me = memberService.findMe(CONSUMER_KEY, token);
+		membersCache.put(me.getId(), me);
+		return me;
+	}
+	private String getMyToken() {
+		return PreferenceManager.getDefaultSharedPreferences(this).getString(TRELLOID_TOKEN, null);
+	}
 	/**
      * Gestisce le dialog che si possono aprire
      */

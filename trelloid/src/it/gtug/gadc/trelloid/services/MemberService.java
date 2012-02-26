@@ -19,10 +19,24 @@ public interface MemberService {
 	@Path("/{memberid}")
 	Member findMembers(@PathParam("memberid") String memberid,
 			@QueryParam("key") String key);
+	
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/me")
+	Member findMe(@QueryParam("key") String key,
+			@QueryParam("token") String token);
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{memberid}/boards")
 	List<Board> listMemberBoards(@PathParam("memberid") String memberid,
 			@QueryParam("key") String key);
+
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("my/boards/")
+	List<Board> findBoardsWichHeIsMember(@QueryParam("key") String key,
+			@QueryParam("token") String token);
+	
+	
 }
