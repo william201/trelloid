@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-
-    <string name="hello">Hello World, TrelloidActivity!</string>
-    <string name="app_name">Trelloid</string>
-    <string name="commenta">Commenta</string>
-
-</resources>
