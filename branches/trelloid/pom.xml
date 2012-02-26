@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>it.gtug.gadc</groupId>
+	<artifactId>trelloid</artifactId>
+	<packaging>pom</packaging>
+	<version>1.0-SNAPSHOT</version>
+
+	<name>Trelloid</name>
+	<description>App Trelloid</description>
+	<url>http://code.google.com/p/trelloid</url>
+	<inceptionYear>2012</inceptionYear>
+
+	<modules>
+		<module>android</module>
+	</modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <java.version>1.6</java.version>
+        <android.version>3.2</android.version>
+        <android.platform>13</android.platform>
+        <android.support.version>r6</android.support.version>
+        <android.sdk.path>/Applications/sviluppo/android-sdk-macosx-r16</android.sdk.path>
+
+        <android-maven.version>3.0.0</android-maven.version>
+
+        <version.org.jboss.resteasy.mobile>1.0.0</version.org.jboss.resteasy.mobile>
+    </properties>
+
+	<scm>
+		<url>http://trelloid.googlecode.com/</url>
+		<connection>scm:svn:http://trelloid.googlecode.com/svn/trunk/trelloid</connection>
+		<developerConnection>scm:scm:svn:http://trelloid.googlecode.com/svn/trunk/trelloid</developerConnection>
+	</scm>
+	
+	<developers>
+		<developer>
+			<name>Luca Masini</name>
+			<email>luca.masini@gmail.com</email>
+			<id>luca.masini</id>
+			<url>http://www.lucamasini.net</url>
+			<timezone>+1</timezone>
+			<roles>
+				<role>developer</role>
+			</roles>
+		</developer>
+	</developers>
+	
+	<licenses>
+		<license>
+			<name>Apache License Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<organization>
+		<name>GTUG Firenze</name>
+		<url>https://sites.google.com/site/firenzegtug/</url>
+	</organization>
+
+	<issueManagement>
+		<system>Trelloid Issues</system>
+		<url>http://code.google.com/p/trelloid/issues/list</url>
+	</issueManagement>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.google.android</groupId>
+				<artifactId>android</artifactId>
+				<version>${android.version}</version>
+			</dependency>
+
+            <dependency>
+                <groupId>com.google.android</groupId>
+                <artifactId>support-v4</artifactId>
+                <version>r6</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy.mobile</groupId>
+                <artifactId>resteasy-mobile</artifactId>
+                <version>${version.org.jboss.resteasy.mobile}</version>
+            </dependency>
+
+		</dependencies>
+	</dependencyManagement>
+
+	<repositories>
+		<repository>
+			<id>com.jakewharton</id>
+			<url>http://r.jakewharton.com/maven/release</url>
+		</repository>
+        <repository>
+            <id>project.repository</id>
+            <url>http://trelloid.googlecode.com/svn/mvnrepository</url>
+        </repository>
+	</repositories>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>2.3.2</version>
+					<configuration>
+						<source>${java.version}</source>
+						<target>${java.version}</target>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>2.8</version>
+				</plugin>
+
+				<plugin>
+					<groupId>com.jayway.maven.plugins.android.generation2</groupId>
+					<artifactId>android-maven-plugin</artifactId>
+					<version>${android-maven.version}</version>
+					<configuration>
+						<sdk>
+							<platform>${android.platform}</platform>
+						</sdk>
+						<undeployBeforeDeploy>true</undeployBeforeDeploy>
+                        <dex>
+                            <jvmArguments>
+                                <jvmArgument>-Xms256m</jvmArgument>
+                                <jvmArgument>-Xmx512m</jvmArgument>
+                            </jvmArguments>
+                        </dex>
+					</configuration>
+					<extensions>true</extensions>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-checkstyle-plugin</artifactId>
+					<version>2.6</version>
+					<configuration>
+						<failsOnError>true</failsOnError>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.1</version>
+				<configuration>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.6</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.wagon</groupId>
+						<artifactId>wagon-ssh</artifactId>
+						<version>1.0-beta-7</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+		</plugins>
+	</build>
+</project>
