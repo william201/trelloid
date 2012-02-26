@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory 
+        android:title="Autenticazione"
+        android:key="auth_category">
+        
+       
+        
+        <ListPreference 
+            android:key="auth_type"
+            android:title="Tipo di autenticazione"
+            android:summary="Definisce se il token di autenticazione deve essere di lettura o scrittura"
+            android:defaultValue="read,write" 
+            android:entries="@array/auth_type"
+            android:entryValues="@array/auth_type_value"   
+        />    
+        
+        <ListPreference 
+            android:key="auth_expire"
+            android:title="Durata dell'autenticazione"
+            android:summary="Definisce la durata di validità del token"
+            android:defaultValue="30days" 
+            android:entries="@array/auth_expire"
+            android:entryValues="@array/auth_expire_value"  
+        />  
+            
+    </PreferenceCategory>
+
+    
+</PreferenceScreen>
