@@ -13,6 +13,7 @@ import java.util.List;
  * @author kwame
  * 
  */
+@Deprecated
 public class BoardContainer {
 	public static final String apiCall = "/1/members/{0}/boards?key={1}&token={2}";
 	private HashMap<String, Board> mapOfBoards = new HashMap<String, Board>();
@@ -26,7 +27,7 @@ public class BoardContainer {
 	}
 
 	public void addBoard(String id, String name) {
-		Board petite = new Board(id, name);
+		Board petite = new Board(id, name,"vuoto");
 		mapOfBoards.put(id, petite);
 
 	}

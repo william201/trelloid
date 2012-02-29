@@ -228,7 +228,7 @@ public class SplashScreenActivity extends Activity {
 		return service.findBoardsWichHeIsMember(CONSUMER_KEY,getMyToken());
 	}
 	
-	//TODO: Troviamo una collocazione accessibile da più parti per questi metodi? CI vorrebbe un Service del Service XD
+	//TODO: Troviamo una collocazione accessibile da piï¿½ parti per questi metodi? CI vorrebbe un Service del Service XD
 	/**
 	 * Recupera il member a cui fa capo il token di autenticazione
 	 * @return
@@ -241,7 +241,7 @@ public class SplashScreenActivity extends Activity {
 		}
 		TrelloidApplication application = (TrelloidApplication) getApplication();
 
-//		Si può pensare di utilizzare la cache? COme si gestisce l'eventuale logout??
+//		Si puï¿½ pensare di utilizzare la cache? COme si gestisce l'eventuale logout??
 		
 //		Map<String, Member> membersCache = application.getMembersCache();
 //		Member member = membersCache.get(idMemberCreator);
