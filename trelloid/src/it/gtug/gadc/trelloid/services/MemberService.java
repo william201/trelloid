@@ -34,7 +34,7 @@ public interface MemberService {
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path("my/boards/")
+	@Path("/my/boards")
 	List<Board> findBoardsWichHeIsMember(@QueryParam("key") String key,
 			@QueryParam("token") String token);
 	

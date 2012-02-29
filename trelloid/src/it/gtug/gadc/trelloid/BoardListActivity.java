@@ -1,62 +1,138 @@
+
 package it.gtug.gadc.trelloid;
 
-
 import it.gtug.gadc.trelloid.model.Board;
-import it.gtug.gadc.trelloid.model.BoardContainer;
-import it.gtug.gadc.trelloid.model.TrelloFactory;
 
-import java.text.MessageFormat;
-import it.gtug.gadc.trelloid.auth.TrelloHandle;
+import it.gtug.gadc.trelloid.services.MemberService;
+import android.preference.PreferenceManager;
 
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.logging.Level;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.util.List;
+import org.jboss.resteasy.client.ProxyFactory;
 
 import android.app.ListActivity;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.ArrayAdapter;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 
-import com.androidquery.AQuery;
-import com.androidquery.callback.AjaxStatus;
 
 
 public class BoardListActivity extends ListActivity {
-	private static final String serverTrello = "https://api.trello.com";
-	private String testKey="9bd5f87e01424e4cae086ea481513c86";
-	private String testToken="ef5d11bd557e2e97f4977b71fdf0be631403c57e75782812a2529cc060d9449b";
+    private static final int DIALOG_PROGRESS = 0;
+    private BoardListAdapter boliAdapter;
+    protected List<Board> boardLists;
+    private AsyncTask<Void, Void, Void> execute;
+    protected ProgressDialog queringDialog;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		
-		super.onCreate(savedInstanceState);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        queringDialog = new ProgressDialog(this);
+        queringDialog.setIndeterminate(true);
+        queringDialog.setCancelable(false);
+        queringDialog.setInverseBackgroundForced(false);
+        //queringDialog.setCanceledOnTouchOutside(true);
+        queringDialog.setTitle("Loading boards..");
+        queringDialog.setMessage("Waiting for data...");
+        queringDialog.show();
+        
+        new AsyncTask<Void, Void, List<Board>>() {
 
-		String trelloQuery=serverTrello+BoardContainer.apiCall;
-		String currentMemberID="me";
-		String trelloBoardsURL=MessageFormat.format(trelloQuery,currentMemberID,testKey,testToken);
-		AQuery aq = new AQuery(this);
-		aq.ajax(trelloBoardsURL, JSONArray.class, this, "jsonBoardListCallback");
-	}
+            @Override
+            protected List<Board> doInBackground(Void... params) {               
+                return getBoardList();    
+            }
+            
+            @Override
+            protected void onPostExecute(List<Board> blist) {
+                boardLists=blist;
+                ListView lv = getListView();                
+                boliAdapter = new BoardListAdapter(getApplicationContext(), boardLists);
+                lv.setAdapter(boliAdapter);
+                queringDialog.dismiss();
+            }
+        }.execute();
+       
+        
+    }
+    
+    @Override
+    protected void onListItemClick(ListView l, View v, int position, long id) {
+        Board board = boliAdapter.getItem(position);
+        
+        Intent intent = new Intent();
+        intent.setClass(BoardListActivity.this, BoardActivity.class);
 
+        intent.putExtra("title",board.getName());
+        intent.putExtra("board", board);
+        intent.putExtra("boardId", board.getId());
 
-	public void jsonBoardListCallback(String url, JSONArray json, AjaxStatus status) {
-		Log.d("trelloid", "jsonBoardListCallback:: " + json);
-		if (json != null) {
-			//Popolare il modello
-			BoardContainer allBoards =TrelloFactory.allocate(BoardContainer.class, json);
-			
-			setListAdapter(
-					new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, allBoards.getArray() )
-					);
-		} else {
-			// ajax error 
-			//TODO: ajax error handling?
-		}
-	}
-	
+        startActivity(intent);
+    }
+    
+
+    private String getToken() {
+        return PreferenceManager.getDefaultSharedPreferences(BoardListActivity.this).getString(
+                SplashScreenActivity.TRELLOID_TOKEN, null);
+    }
+
+    private List<Board> getBoardList() {
+        MemberService service = ProxyFactory.create(MemberService.class, "https://api.trello.com");
+        String token = getToken();
+        //TODO: userid hardcoded!!!
+        List<Board> listOB = service.listMemberBoards("userid", SplashScreenActivity.CONSUMER_KEY);
+        return listOB;
+    }
+
+    class BoardListAdapter extends BaseAdapter {
+        private Context context;
+        private List<Board> allBoards;
+
+        public BoardListAdapter(Context context,List<Board> objects) {           
+            this.context = context;
+            this.allBoards = objects;
+        }
+
+        public int getCount() {
+            return allBoards.size();
+        }
+
+        public Board getItem(int position) {
+            return allBoards.get(position);
+        }
+
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View row = convertView;
+            if (row == null) {
+                // ROW INFLATION
+                LayoutInflater inflater = (LayoutInflater) context.getSystemService(
+                        Context.LAYOUT_INFLATER_SERVICE);
+                row = inflater.inflate(R.layout.item_list, parent, false);
+            }
+            Board corrente = getItem(position);
+
+            TextView boardName = (TextView)row.findViewById(R.id.list_name);
+            boardName.setText(corrente.getName());
+            ImageView listIcon = (ImageView) row.findViewById(R.id.list_icon );
+            listIcon.setImageResource(R.drawable.ic_launcher);
+            TextView boardDesc = (TextView)row.findViewById(R.id.list_description);
+            boardDesc.setText(corrente.getDesc());
+            
+            return row;
+        }
+
+        public long getItemId(int position) {
+            return (long)position;
+        }
+
+    }
+
 }

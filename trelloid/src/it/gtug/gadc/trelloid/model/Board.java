@@ -11,22 +11,26 @@ public class Board implements Serializable{
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1123L;
 	private String id;
 	private String name;
+	private String desc;
 
 	private List<CardContainer> containers;
 
-	public Board() {
-		
-	}
 	
-	public Board(String id, String name) {
-		this.id=id;
-		this.name=name;
-	}
+	
+	public Board(String id, String name, String desc) {
+        this.id=id;
+        this.name=name;
+        this.desc=desc;
+    }
 
-	public List<CardContainer> getContainers() {
+	public Board() {
+        this("vuoto","vuoto","default");
+    }
+
+    public List<CardContainer> getContainers() {
 		return containers;
 	}
 
@@ -54,4 +58,12 @@ public class Board implements Serializable{
 	public String toString(){
 		return name;
 	}
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
 }
