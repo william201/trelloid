@@ -38,5 +38,11 @@ public interface MemberService {
 	List<Board> findBoardsWichHeIsMember(@QueryParam("key") String key,
 			@QueryParam("token") String token);
 	
+	@GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/my/boards/public")
+    List<Board> findPublicBoardsWichHeIsMember(@QueryParam("key") String key,
+            @QueryParam("token") String token);
+    
 	
 }

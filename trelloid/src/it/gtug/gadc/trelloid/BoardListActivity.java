@@ -8,7 +8,6 @@ import android.preference.PreferenceManager;
 
 import java.util.List;
 import org.jboss.resteasy.client.ProxyFactory;
-
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -88,7 +87,7 @@ public class BoardListActivity extends ListActivity {
         MemberService service = ProxyFactory.create(MemberService.class, "https://api.trello.com");
 
         //List<Board> listOB = service.listMemberBoards("userid", SplashScreenActivity.CONSUMER_KEY);        
-        List<Board> listOB = service.findBoardsWichHeIsMember(TrelloidApplication.CONSUMER_KEY, getToken());        
+        List<Board> listOB = service.findPublicBoardsWichHeIsMember(TrelloidApplication.CONSUMER_KEY, getToken());        
         
         return listOB;
     }
