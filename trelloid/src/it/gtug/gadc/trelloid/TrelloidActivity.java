@@ -32,8 +32,6 @@ public class TrelloidActivity extends ListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-        
-        
 //		String urlTrello = "https://api.trello.com/1/members/me/boards?key=&token=";
 //		AQuery aq = new AQuery(this);
 //		aq.ajax(urlTrello, JSONArray.class, this, "jsonCallback");

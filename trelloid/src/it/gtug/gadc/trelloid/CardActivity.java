@@ -80,7 +80,7 @@ public class CardActivity extends ListActivity {
 
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("text", "Prova");
-			params.put("key", SplashScreenActivity.CONSUMER_KEY);
+			params.put("key", TrelloidApplication.CONSUMER_KEY);
 			params.put("token", token);
 
 			aq.ajax("https://api.trello.com/1/cards/" + cardId + "/actions/comments", params, JSONObject.class, new AjaxCallback<JSONObject>() {
@@ -98,7 +98,7 @@ public class CardActivity extends ListActivity {
 			// String token =
 			// PreferenceManager.getDefaultSharedPreferences(CardActivity.this).getString(SplashScreenActivity.TRELLOID_TOKEN,
 			// null);
-			// service.addComment(cardId, SplashScreenActivity.CONSUMER_KEY,
+			// service.addComment(cardId, TrelloidApplication.CONSUMER_KEY,
 			// token, "{ text: 'Prova da trelloid' }");
 			// return null;
 			// }
