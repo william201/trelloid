@@ -86,9 +86,10 @@ public class BoardListActivity extends ListActivity {
 
     private List<Board> getBoardList() {
         MemberService service = ProxyFactory.create(MemberService.class, "https://api.trello.com");
-        String token = getToken();
-        //TODO: userid hardcoded!!!
-        List<Board> listOB = service.listMemberBoards("userid", SplashScreenActivity.CONSUMER_KEY);
+
+        //List<Board> listOB = service.listMemberBoards("userid", SplashScreenActivity.CONSUMER_KEY);        
+        List<Board> listOB = service.findBoardsWichHeIsMember(TrelloidApplication.CONSUMER_KEY, getToken());        
+        
         return listOB;
     }
 
