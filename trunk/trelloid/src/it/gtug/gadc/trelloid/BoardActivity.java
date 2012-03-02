@@ -17,6 +17,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
@@ -35,7 +36,7 @@ public class BoardActivity extends Activity {
 
     PageIndicator mIndicator;
 
-    protected Board currentBoard;
+
 
     protected ProgressDialog queryDialog;
 
@@ -78,6 +79,7 @@ public class BoardActivity extends Activity {
             final ArrayAdapter<Card> adapter = new ArrayAdapter<Card>(BoardActivity.this,
                     android.R.layout.simple_list_item_1, element);
             listView.setAdapter(adapter);
+            
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 public void onItemClick(AdapterView<?> l, View arg1, int position, long arg3) {
                     Card card = adapter.getItem(position);
@@ -135,12 +137,11 @@ public class BoardActivity extends Activity {
 
             @Override
             protected void onPostExecute(Board aboard) {
-                currentBoard = aboard;
                 setContentView(R.layout.board);
                 String title = getIntent().getStringExtra("title");
                 setTitle(title);
                 mPager = (ViewPager)findViewById(R.id.pager);
-                mPager.setAdapter(new ListContainerAdapter(currentBoard));
+                mPager.setAdapter(new ListContainerAdapter(aboard));
                 mIndicator = (TabPageIndicator)findViewById(R.id.indicator);
                 mIndicator.setViewPager(mPager);               
 
@@ -153,8 +154,9 @@ public class BoardActivity extends Activity {
 
     private Board getBoard(String boardId) {
         BoardService service = ProxyFactory.create(BoardService.class, "https://api.trello.com");
+        String token =getToken();
         List<CardContainer> lists = service
-                .findListsForBoard(boardId, SplashScreenActivity.testKey);
+                .findListsForBoard(boardId, TrelloidApplication.CONSUMER_KEY,token);
 
         Board board = new Board();
         board.setId(lists.get(0).getIdBoard());
@@ -163,4 +165,8 @@ public class BoardActivity extends Activity {
         return board;
     }
 
+    private String getToken() {
+        return PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString(
+                TrelloidApplication.TRELLOID_TOKEN, null);
+    }
 }

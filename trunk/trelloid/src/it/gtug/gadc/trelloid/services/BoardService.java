@@ -23,5 +23,11 @@ public interface BoardService {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{boardid}/lists")
-    List<CardContainer> findListsForBoard(@PathParam("boardid") String boardid, @QueryParam("key") String key);
+    List<CardContainer> findListsForBoard(@PathParam("boardid") String boardid, @QueryParam("key") String key, @QueryParam("token") String token);
+    
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{boardid}/lists")
+    List<CardContainer> findListsForBoardPubs(@PathParam("boardid") String boardid, @QueryParam("key") String key);
+
 }

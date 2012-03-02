@@ -1,6 +1,8 @@
 
 package it.gtug.gadc.trelloid.auth;
 
+import it.gtug.gadc.trelloid.TrelloidApplication;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -79,14 +81,16 @@ public class TrelloHandle extends AccountHandle {
     private String expiration;
 
     private String scope;
+    
+    private Context mainApp;
 
-    public TrelloHandle(Activity act, String consumerKey, String consumerSecret) {
+    public TrelloHandle(Activity act, Context application, String consumerKey, String consumerSecret) {
 
         this.act = act;
-
+        this.mainApp=application;
         consumer = new CommonsHttpOAuthConsumer(consumerKey, consumerSecret);
-        token = fetchToken(TRELLOID_TOKEN);
-        secret = fetchToken(TRELLOID_SECRET);
+        token = fetchToken(TrelloidApplication.TRELLOID_TOKEN);
+        secret = fetchToken(TrelloidApplication.TRELLOID_SECRET);
 
         if (token != null && secret != null) {
             consumer.setTokenWithSecret(token, secret);
@@ -204,16 +208,16 @@ public class TrelloHandle extends AccountHandle {
 
     }
 
-    private static final String TRELLOID_TOKEN = "aq.trelloid.token";
+    //private static final String TRELLOID_TOKEN = "aq.trelloid.token";
 
-    private static final String TRELLOID_SECRET = "aq.trelloid.secret";
+    //private static final String TRELLOID_SECRET = "aq.trelloid.secret";
 
     private String fetchToken(String key) {
-        return PreferenceManager.getDefaultSharedPreferences(act).getString(key, null);
+        return PreferenceManager.getDefaultSharedPreferences(mainApp).getString(key, null);
     }
 
     private void storeToken(String key1, String token1, String key2, String token2) {
-        PreferenceManager.getDefaultSharedPreferences(act).edit().putString(key1, token1)
+        PreferenceManager.getDefaultSharedPreferences(mainApp).edit().putString(key1, token1)
                 .putString(key2, token2).commit();
     }
 
@@ -253,12 +257,12 @@ public class TrelloHandle extends AccountHandle {
                 AQUtility.debug("token", token);
                 AQUtility.debug("secret", secret);
 
-                storeToken(TRELLOID_TOKEN, token, TRELLOID_SECRET, secret);
-                Context context = act.getApplicationContext();
+                storeToken(TrelloidApplication.TRELLOID_TOKEN, token, TrelloidApplication.TRELLOID_SECRET, secret);
+                //Context context = act.getApplicationContext();
                 CharSequence text = "Authenticated!Token:" + token;
                 int duration = Toast.LENGTH_LONG;
 
-                Toast toast = Toast.makeText(context, text, duration);
+                Toast toast = Toast.makeText(mainApp, text, duration);
                 toast.show();
                 dismiss();
                 success(act);
@@ -343,7 +347,7 @@ public class TrelloHandle extends AccountHandle {
 
         token = null;
         secret = null;
-        storeToken(TRELLOID_TOKEN, null, TRELLOID_SECRET, null);
+        storeToken(TrelloidApplication.TRELLOID_TOKEN, null, TrelloidApplication.TRELLOID_SECRET, null);
 
         Task task = new Task();
         task.cb = cb;
@@ -369,11 +373,11 @@ public class TrelloHandle extends AccountHandle {
     @Override
     public boolean authenticated() {
         if (token != null) {
-            Context context = act.getApplicationContext();
+            //Context context = act.getApplicationContext();
             CharSequence text = "Authenticated!Token:" + token;
             int duration = Toast.LENGTH_LONG;
 
-            Toast toast = Toast.makeText(context, text, duration);
+            Toast toast = Toast.makeText(mainApp, text, duration);
             toast.show();
         }
         return token != null && secret != null;
@@ -388,7 +392,7 @@ public class TrelloHandle extends AccountHandle {
         CookieSyncManager.createInstance(act);
         CookieManager.getInstance().removeAllCookie();
 
-        storeToken(TRELLOID_TOKEN, null, TRELLOID_SECRET, null);
+        storeToken(TrelloidApplication.TRELLOID_TOKEN, null, TrelloidApplication.TRELLOID_SECRET, null);
     }
 
     public String getAppName() {
