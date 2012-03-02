@@ -2,12 +2,15 @@
 package it.gtug.gadc.trelloid;
 
 import it.gtug.gadc.trelloid.model.Board;
+import it.gtug.gadc.trelloid.model.TokenData;
 
 import it.gtug.gadc.trelloid.services.MemberService;
+import it.gtug.gadc.trelloid.services.TokenService;
 import android.preference.PreferenceManager;
 
 import java.util.List;
 import org.jboss.resteasy.client.ProxyFactory;
+
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -79,16 +82,19 @@ public class BoardListActivity extends ListActivity {
     
 
     private String getToken() {
-        return PreferenceManager.getDefaultSharedPreferences(BoardListActivity.this).getString(
-                SplashScreenActivity.TRELLOID_TOKEN, null);
+        return PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString(
+                TrelloidApplication.TRELLOID_TOKEN, null);
     }
 
     private List<Board> getBoardList() {
+        String token = getToken();
+        TokenService tiServe=  ProxyFactory.create(TokenService.class,"https://api.trello.com");
+        TokenData myTok = tiServe.getTokenMemberInfo(token, TrelloidApplication.CONSUMER_KEY);
+        
         MemberService service = ProxyFactory.create(MemberService.class, "https://api.trello.com");
 
-        //List<Board> listOB = service.listMemberBoards("userid", SplashScreenActivity.CONSUMER_KEY);        
-        List<Board> listOB = service.findPublicBoardsWichHeIsMember(TrelloidApplication.CONSUMER_KEY, getToken());        
-        
+        List<Board> listOB = service.listMemberBoards(myTok.getUsername(), TrelloidApplication.CONSUMER_KEY,token);
+        //List<Board> listOB = service.findPublicBoardsWichHeIsMember(TrelloidApplication.CONSUMER_KEY, getToken());
         return listOB;
     }
 

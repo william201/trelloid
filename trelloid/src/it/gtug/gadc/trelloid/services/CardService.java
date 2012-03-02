@@ -20,13 +20,17 @@ public interface CardService {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{cardid}")
+	Card getCardPubs(@PathParam("cardid") String cardId, @QueryParam("key") String key);
+	
+	@GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{cardid}")
 	Card getCard(@PathParam("cardid") String cardId, @QueryParam("key") String key, @QueryParam("token") String token);
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{cardid}/actions")
-	List<Comment> getComments(@PathParam("cardid") String cardId, @QueryParam("key") String key, @QueryParam("filter") String filter,
-			@QueryParam("token") String token);
+	List<Comment> getComments(@PathParam("cardid") String cardId, @QueryParam("key") String key, @QueryParam("token") String token, @QueryParam("filter") String filter);
 
 	@POST
 	@Path("/{cardid}/actions/comments")

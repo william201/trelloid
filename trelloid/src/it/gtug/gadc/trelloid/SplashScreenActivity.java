@@ -169,7 +169,7 @@ public class SplashScreenActivity extends Activity {
 	  */
 	public void authTrello(View view){
 		
-       TrelloHandle handler = new TrelloHandle(this, CONSUMER_KEY, CONSUMER_SECRET);
+       TrelloHandle handler = new TrelloHandle(this,this.getApplicationContext(), CONSUMER_KEY, CONSUMER_SECRET);
         handler.setAppName(SplashScreenActivity.APP_NAME);
         handler.setScope(PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getString(MainPreferencesActivity.AUTH_TYPE_PREF, "read,write"));
         handler.setExpiration(PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getString(MainPreferencesActivity.AUTH_EXPIRE_PREF, "30days"));
@@ -209,7 +209,7 @@ public class SplashScreenActivity extends Activity {
 	
 	private Board getBoard(String boardId) {
 		BoardService service = ProxyFactory.create(BoardService.class,"https://api.trello.com");
-		List<CardContainer> lists = service.findListsForBoard(boardId, SplashScreenActivity.testKey);
+		List<CardContainer> lists = service.findListsForBoardPubs(boardId, SplashScreenActivity.testKey);
 
 		Board board = new Board();
 		board.setId(lists.get(0).getIdBoard());

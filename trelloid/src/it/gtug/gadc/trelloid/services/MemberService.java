@@ -29,8 +29,14 @@ public interface MemberService {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{memberid}/boards")
-	List<Board> listMemberBoards(@PathParam("memberid") String memberid,
+	List<Board> listMemberBoardsPubs(@PathParam("memberid") String memberid,
 			@QueryParam("key") String key);
+	
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/{memberid}/boards")
+	List<Board> listMemberBoards(@PathParam("memberid") String memberid,
+	            @QueryParam("key") String key,@QueryParam("token") String token);
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)

@@ -98,7 +98,7 @@ public class CardActivity extends ListActivity {
 			// String token =
 			// PreferenceManager.getDefaultSharedPreferences(CardActivity.this).getString(SplashScreenActivity.TRELLOID_TOKEN,
 			// null);
-			// service.addComment(cardId, TrelloidApplication.CONSUMER_KEY,
+			// service.addComment(cardId, SplashScreenActivity.CONSUMER_KEY,
 			// token, "{ text: 'Prova da trelloid' }");
 			// return null;
 			// }
@@ -109,15 +109,15 @@ public class CardActivity extends ListActivity {
 	}
 
 	private String getToken() {
-		return PreferenceManager.getDefaultSharedPreferences(CardActivity.this).getString(SplashScreenActivity.TRELLOID_TOKEN, null);
+		return PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString(TrelloidApplication.TRELLOID_TOKEN, null);
 	}
 
 	private Card getCard(String cardId) {
 		CardService service = ProxyFactory.create(CardService.class, "https://api.trello.com");
 
 		String token = getToken();
-		Card card = service.getCard(cardId, SplashScreenActivity.CONSUMER_KEY, token);
-		List<Comment> comments = service.getComments(cardId, SplashScreenActivity.CONSUMER_KEY, "commentCard", token);
+		Card card = service.getCard(cardId, TrelloidApplication.CONSUMER_KEY,token);
+		List<Comment> comments = service.getComments(cardId, TrelloidApplication.CONSUMER_KEY,token, "commentCard");
 		card.setComments(comments);
 		return card;
 	}
@@ -128,7 +128,7 @@ public class CardActivity extends ListActivity {
 		Member member = membersCache.get(idMemberCreator);
 		if (member == null) {
 			MemberService memberService = ProxyFactory.create(MemberService.class, "https://api.trello.com");
-			member = memberService.findMembers(idMemberCreator, SplashScreenActivity.CONSUMER_KEY);
+			member = memberService.findMembers(idMemberCreator, TrelloidApplication.CONSUMER_KEY);
 			membersCache.put(idMemberCreator, member);
 		}
 		return member;
