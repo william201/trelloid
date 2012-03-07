@@ -25,7 +25,7 @@
         <android.version>3.2</android.version>
         <android.platform>13</android.platform>
         <android.support.version>r6</android.support.version>
-        <android.sdk.path>/Applications/sviluppo/android-sdk-macosx-r16</android.sdk.path>
+        <android.sdk.path>${env.ANDROID_HOME}</android.sdk.path>
 
         <android-maven.version>3.0.0</android-maven.version>
 
