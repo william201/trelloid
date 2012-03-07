@@ -20,11 +20,11 @@
     </dependencies>
 
     <build>
-        <plugins>
+        <plugins>        
             <plugin>
                 <groupId>com.jayway.maven.plugins.android.generation2</groupId>
                 <artifactId>maven-android-plugin</artifactId>    
-		 <version>3.0.0-alpha-11</version>           
+		         <version>3.0.0-alpha-1</version>           
                 <configuration>
                     <androidManifestFile>${project.basedir}/AndroidManifest.xml</androidManifestFile>
                     <assetsDirectory>${project.basedir}/assets</assetsDirectory>
@@ -46,6 +46,16 @@
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-eclipse-plugin</artifactId>
+                <configuration>
+                    <additionalProjectnatures>
+                        <projectnature>
+                        com.android.ide.eclipse.adt.AndroidNature
+                        </projectnature>
+                    </additionalProjectnatures>
                 </configuration>
             </plugin>
         </plugins>
