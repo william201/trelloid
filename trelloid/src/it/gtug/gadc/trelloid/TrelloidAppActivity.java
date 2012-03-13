@@ -94,6 +94,12 @@ public class TrelloidAppActivity extends Activity {
            showToast("Credenziali pulite");
     }
     
+    public void showMainPreferences(View view){
+        Intent settingsActivity = new Intent(getBaseContext(),
+                MainPreferencesActivity.class);
+        startActivity(settingsActivity);
+    }
+    
     /**
      * MOstra un popup con il messaggio indicato
      * @param message
