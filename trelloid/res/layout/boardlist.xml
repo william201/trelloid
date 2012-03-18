@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" 
+    android:background="@color/darkWhite"
+    android:padding="10dip">
+    <RelativeLayout android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_marginTop="10dip"
+    android:layout_marginBottom="10dip"
+    android:layout_gravity="center"
+    android:background="@drawable/first_outer_panel"
+    >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="5dp"
+            android:text="Boards" 
+            style="@style/PanelTitle"/>
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/second_outer_panel"
+            android:id="@+id/boardListSecondOuterPanel"/>
+        <ImageView
+            android:id="@+id/imageView_boardListbackground"
+            android:src="@drawable/boardlist_background"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:layout_alignTop="@id/boardListSecondOuterPanel"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            />
+        <ListView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_marginTop="50dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginBottom="20dp"
+            android:id="@+id/boardsListView"
+            android:cacheColorHint="#00000000"
+            >
+            
+            
+        </ListView>
+        
+    </RelativeLayout>
+
+   
+
+</LinearLayout>

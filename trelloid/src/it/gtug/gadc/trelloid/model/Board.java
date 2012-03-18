@@ -15,6 +15,11 @@ public class Board implements Serializable{
 	private String id;
 	private String name;
 	private String desc;
+	private boolean closed;
+	private String idOrganization;
+	private boolean pinned;
+	private String url;
+	private BoardPrefs prefs;
 
 	private List<CardContainer> containers;
 
@@ -30,7 +35,7 @@ public class Board implements Serializable{
         this("vuoto","vuoto","default");
     }
 
-    public List<CardContainer> getContainers() {
+	public List<CardContainer> getContainers() {
 		return containers;
 	}
 
@@ -58,12 +63,60 @@ public class Board implements Serializable{
 	public String toString(){
 		return name;
 	}
-
-    public String getDesc() {
+	
+	public boolean isPublic() {
+		
+		if(this.getPrefs()!=null&&this.getPrefs().getPermissionLevel().equals("public")){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	public String getDesc() {
         return desc;
     }
 
     public void setDesc(String desc) {
         this.desc = desc;
     }
+
+	public boolean isClosed() {
+		return closed;
+	}
+
+	public void setClosed(boolean closed) {
+		this.closed = closed;
+	}
+
+	public String getIdOrganization() {
+		return idOrganization;
+	}
+
+	public void setIdOrganization(String idOrganization) {
+		this.idOrganization = idOrganization;
+	}
+
+	public boolean isPinned() {
+		return pinned;
+	}
+
+	public void setPinned(boolean pinned) {
+		this.pinned = pinned;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public BoardPrefs getPrefs() {
+		return prefs;
+	}
+
+	public void setPrefs(BoardPrefs prefs) {
+		this.prefs = prefs;
+	}
 }

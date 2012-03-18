@@ -114,59 +114,34 @@ public class BoardActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);      
 
-        String boardid = getIntent().getStringExtra("boardId");
-        queryDialog = new ProgressDialog(this);
-        queryDialog.setIndeterminate(true);
-        queryDialog.setCancelable(false);
-        queryDialog.setInverseBackgroundForced(false);
-        // queringDialog.setCanceledOnTouchOutside(true);
-        queryDialog.setTitle("Loading board cardlists ..");
-        queryDialog.setMessage("Waiting for data...");
-        queryDialog.show();
-
-        new AsyncTask<String, Void, Board>() {
-
-            @Override
-            protected Board doInBackground(String... boardIds) {
-                int count = boardIds.length;
-                if (count > 0) {
-                    return getBoard(boardIds[0]);
-                }
-                return new Board();
-            }
-
-            @Override
-            protected void onPostExecute(Board aboard) {
-                setContentView(R.layout.board);
-                String title = getIntent().getStringExtra("title");
-                setTitle(title);
-                mPager = (ViewPager)findViewById(R.id.pager);
-                mPager.setAdapter(new ListContainerAdapter(aboard));
-                mIndicator = (TabPageIndicator)findViewById(R.id.indicator);
-                mIndicator.setViewPager(mPager);               
-
-                queryDialog.dismiss();                  
-            }
-        }.execute(boardid);
         
+        setContentView(R.layout.board);
+        String title = getIntent().getStringExtra("title");
+        setTitle(title);
+        mPager = (ViewPager)findViewById(R.id.pager);
+        mPager.setAdapter(new ListContainerAdapter((Board)getIntent().getSerializableExtra("board")));
+        mIndicator = (TabPageIndicator)findViewById(R.id.indicator);
+        mIndicator.setViewPager(mPager);               
+
+                
         
     }
 
-    private Board getBoard(String boardId) {
-        BoardService service = ProxyFactory.create(BoardService.class, "https://api.trello.com");
-        String token =getToken();
-        List<CardContainer> lists = service
-                .findListsForBoard(boardId, TrelloidApplication.CONSUMER_KEY,token);
+//    private Board getBoard(String boardId) {
+//        BoardService service = ProxyFactory.create(BoardService.class, "https://api.trello.com");
+//        String token =getToken();
+//        List<CardContainer> lists = service
+//                .findListsForBoard(boardId, TrelloidApplication.CONSUMER_KEY,token);
+//
+//        Board board = new Board();
+//        board.setId(lists.get(0).getIdBoard());
+//        board.setContainers(lists);
+//
+//        return board;
+//    }
 
-        Board board = new Board();
-        board.setId(lists.get(0).getIdBoard());
-        board.setContainers(lists);
-
-        return board;
-    }
-
-    private String getToken() {
-        return PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString(
-                TrelloidApplication.TRELLOID_TOKEN, null);
-    }
+//    private String getToken() {
+//        return PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString(
+//                TrelloidApplication.TRELLOID_TOKEN, null);
+//    }
 }

@@ -1,5 +1,6 @@
 package it.gtug.gadc.trelloid.services;
 
+import it.gtug.gadc.trelloid.model.Board;
 import it.gtug.gadc.trelloid.model.CardContainer;
 
 import java.util.List;
@@ -29,5 +30,9 @@ public interface BoardService {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{boardid}/lists")
     List<CardContainer> findListsForBoardPubs(@PathParam("boardid") String boardid, @QueryParam("key") String key);
-
+    
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{boardid}")
+    Board getBoard(@PathParam("boardid") String boardid, @QueryParam("key") String key, @QueryParam("token") String token);
 }
