@@ -3,6 +3,7 @@ package it.gtug.gadc.trelloid.services;
 import it.gtug.gadc.trelloid.model.Board;
 import it.gtug.gadc.trelloid.model.Member;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -41,7 +42,7 @@ public interface MemberService {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/my/boards")
-	List<Board> findBoardsWichHeIsMember(@QueryParam("key") String key,
+	ArrayList<Board> findBoardsWichHeIsMember(@QueryParam("key") String key,
 			@QueryParam("token") String token);
 	
 	@GET

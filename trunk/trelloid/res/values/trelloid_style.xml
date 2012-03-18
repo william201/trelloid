@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	
+    <style name="Theme.Trelloid" parent="@style/Theme.Sherlock">
+    	
+    	<item name="abBackground">@drawable/actionbar_background</item>
+    	<item name="abIcon">@drawable/ab_icon</item>
+    	<item name="abHeight">60dp</item>
+    	<item name="abTitle">Sysdat CRM</item>
+    	<item name="abTitleTextStyle">@style/ActionBarTitle</item>
+    	<item name="abSubtitleTextStyle">@style/ActionBarSubtitle</item>
+    	<item name="actionButtonStyle">@style/CustomActionButton</item>
+    	<!--  <item name="abItemPadding">0dp</item> -->  
+    	<item name="abDivider">@drawable/abs__action_item_divider</item> 
+		<!-- <item name="android:background">@color/darkWhite</item> -->
+    </style>
+    
+    <style name="ActionBarTitle" parent="TextAppearance.Widget.Title">
+   		<item name="android:textSize">19sp</item>
+	  <item name="android:textStyle">bold</item>
+	  <item name="android:shadowColor">@color/lightGray</item>  
+      <item name="android:shadowRadius">1</item>  
+      <item name="android:shadowDx">2</item>  
+      <item name="android:shadowDy">2</item>  
+	  <item name="android:textColor">@color/darkWhite</item>
+    </style>
+    
+    <style name="ActionBarSubtitle" parent="TextAppearance.Widget.Title">
+   	  <item name="android:textSize">15sp</item>
+	  <item name="android:textStyle">bold</item>
+	  <item name="android:shadowColor">@color/lightGray</item>  
+      <item name="android:shadowRadius">1</item>  
+      <item name="android:shadowDx">2</item>  
+      <item name="android:shadowDy">2</item>  
+	  <item name="android:textColor">@color/darkWhite</item>
+    </style>
+    
+   	<style name="CustomActionButton" parent="Widget.Sherlock.ActionButton">
+   		<item name="android:padding">3dp</item>
+	    <item name="android:gravity">fill_vertical</item>
+    </style>
+    
+    <style name="PanelTitle" parent="TextAppearance.Widget.Title">
+   		<item name="android:textSize">15sp</item>
+	    <item name="android:textStyle">bold</item>
+	    <item name="android:textColor">@color/darkWhite</item>
+    </style>
+    
+    <style name="BoardlistItemDescription" parent="TextAppearance.Widget.Title">
+   		<item name="android:textSize">19sp</item>
+	    <item name="android:textStyle">normal</item>
+	    <item name="android:textColor">@color/darkGray</item>
+    </style>
+   
+</resources>
