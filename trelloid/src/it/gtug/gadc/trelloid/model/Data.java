@@ -1,9 +1,11 @@
 package it.gtug.gadc.trelloid.model;
 
+import java.io.Serializable;
+
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Data {
+public class Data implements Serializable {
 	private String text;
 
 	public String getText() {

@@ -1,161 +1,193 @@
+
 package it.gtug.gadc.trelloid;
 
 import it.gtug.gadc.trelloid.model.Card;
 import it.gtug.gadc.trelloid.model.Comment;
-import it.gtug.gadc.trelloid.model.Member;
-import it.gtug.gadc.trelloid.services.CardService;
-import it.gtug.gadc.trelloid.services.MemberService;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.resteasy.client.ProxyFactory;
 import org.json.JSONObject;
 
-import android.app.ListActivity;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
-import android.os.AsyncTask;
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.Loader;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import com.androidquery.AQuery;
 import com.androidquery.callback.AjaxCallback;
 import com.androidquery.callback.AjaxStatus;
 
-public class CardActivity extends ListActivity {
+public class CardActivity extends FragmentActivity {
 
-	private String cardId;
+    private String cardId;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		String stringExtra = getIntent().getStringExtra("cardId");
-		cardId = stringExtra != null ? stringExtra : "4f3fa1c0b23069041241fbfc";
-		setContentView(R.layout.card);
+    private ProgressDialog queryDialog;
 
-		new AsyncTask<Void, Void, Card>() {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        String stringExtra = getIntent().getStringExtra("cardId");
+        cardId = stringExtra != null ? stringExtra : "4f3fa1c0b23069041241fbfc";
+        setContentView(R.layout.card);
 
-			@Override
-			protected Card doInBackground(Void... params) {
-				Card card = getCard(cardId);
-				for (Comment comment : card.getComments()) {
-					getMember(comment.getIdMemberCreator());
-				}
-				return card;
-			}
+        showDialog(1);
 
-			@Override
-			protected void onPostExecute(Card card) {
-				AQuery aq = new AQuery(CardActivity.this);
+        Bundle bundle = new Bundle();
+        bundle.putString("cardId", cardId);
 
-				aq.id(R.id.title).text(card.getName());
-				aq.id(R.id.description).text(card.getDesc());
+        getSupportLoaderManager().initLoader(0, bundle, new LoaderCallbacks<Card>() {
 
-				ArrayAdapter<Comment> arrayAdapter = new CommentAdapter(CardActivity.this, R.layout.comment, R.id.text, card.getComments());
-				setListAdapter(arrayAdapter);
-			}
+            public Loader<Card> onCreateLoader(int id, Bundle args) {
+                return new CardLoader(CardActivity.this, args.getString("cardId"));
+            }
 
-		}.execute();
-	}
+            public void onLoadFinished(Loader<Card> arg0, Card card) {
+                showCardInLayout(card);
+                queryDialog.dismiss();
+            }
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		super.onCreateOptionsMenu(menu);
-		getMenuInflater().inflate(R.menu.menu_card, menu);
-		return true;
-	}
+            public void onLoaderReset(Loader<Card> arg0) {
+            }
+        });
+    }
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.commenta:
-			String token = getToken();
-			AQuery aq = new AQuery(this);
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        showCardInLayout((Card)data.getSerializableExtra("card"));
+    }
 
-			Map<String, Object> params = new HashMap<String, Object>();
-			params.put("text", "Prova");
-			params.put("key", TrelloidApplication.CONSUMER_KEY);
-			params.put("token", token);
+    @Override
+    protected Dialog onCreateDialog(int id) {
+        queryDialog = new ProgressDialog(this);
+        queryDialog.setIndeterminate(true);
+        queryDialog.setCancelable(false);
+        queryDialog.setInverseBackgroundForced(false);
+        queryDialog.setTitle("Loading card...");
+        queryDialog.setMessage("Waiting for data...");
+        return queryDialog;
+    }
 
-			aq.ajax("https://api.trello.com/1/cards/" + cardId + "/actions/comments", params, JSONObject.class, new AjaxCallback<JSONObject>() {
-				@Override
-				public void callback(String url, JSONObject json, AjaxStatus status) {
-					System.out.println(123);
-				}
-			});
-			// new AsyncTask<Void, Void, String>() {
-			//
-			// @Override
-			// protected String doInBackground(Void... arg0) {
-			// CardService service = ProxyFactory.create(CardService.class,
-			// "https://api.trello.com");
-			// String token =
-			// PreferenceManager.getDefaultSharedPreferences(CardActivity.this).getString(SplashScreenActivity.TRELLOID_TOKEN,
-			// null);
-			// service.addComment(cardId, SplashScreenActivity.CONSUMER_KEY,
-			// token, "{ text: 'Prova da trelloid' }");
-			// return null;
-			// }
-			// }.execute();
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
-	}
+    @Override
+    public boolean onCreateOptionsMenu(android.support.v4.view.Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.menu_card, menu);
+        return true;
+    }
 
-	private String getToken() {
-		return PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString(TrelloidApplication.TRELLOID_TOKEN, null);
-	}
+    @Override
+    public boolean onOptionsItemSelected(android.support.v4.view.MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.commenta:
+                createComment();
+                return true;
+            case R.id.edit:
+                editCard();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
-	private Card getCard(String cardId) {
-		CardService service = ProxyFactory.create(CardService.class, "https://api.trello.com");
+    private void editCard() {
+        startActivityForResult(new Intent(this, EditCardActivity.class), 1);
+        // startActionMode(new ActionMode.Callback() {
+        //
+        // public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        // return false;
+        // }
+        //
+        // public void onDestroyActionMode(ActionMode mode) {
+        //
+        // }
+        //
+        // public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        // menu.add("Done");
+        // mode.setTitle("");
+        // return true;
+        // }
+        //
+        // public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        // mode.finish();
+        // return true;
+        // }
+        // });
+    }
 
-		String token = getToken();
-		Card card = service.getCard(cardId, TrelloidApplication.CONSUMER_KEY,token);
-		List<Comment> comments = service.getComments(cardId, TrelloidApplication.CONSUMER_KEY,token, "commentCard");
-		card.setComments(comments);
-		return card;
-	}
+    private void createComment() {
+        String token = getToken();
+        AQuery aq = new AQuery(this);
 
-	private Member getMember(String idMemberCreator) {
-		TrelloidApplication application = (TrelloidApplication) getApplication();
-		Map<String, Member> membersCache = application.getMembersCache();
-		Member member = membersCache.get(idMemberCreator);
-		if (member == null) {
-			MemberService memberService = ProxyFactory.create(MemberService.class, "https://api.trello.com");
-			member = memberService.findMembers(idMemberCreator, TrelloidApplication.CONSUMER_KEY);
-			membersCache.put(idMemberCreator, member);
-		}
-		return member;
-	}
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("text", "Prova");
+        params.put("key", TrelloidApplication.CONSUMER_KEY);
+        params.put("token", token);
 
-	private final class CommentAdapter extends ArrayAdapter<Comment> {
-		private CommentAdapter(Context context, int resource, int textViewResourceId, List<Comment> objects) {
-			super(context, resource, textViewResourceId, objects);
-		}
+        aq.ajax("https://api.trello.com/1/cards/" + cardId + "/actions/comments", params,
+                JSONObject.class, new AjaxCallback<JSONObject>() {
+                    @Override
+                    public void callback(String url, JSONObject json, AjaxStatus status) {
+                        System.out.println(123);
+                    }
+                });
+    }
 
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			View view = super.getView(position, convertView, parent);
+    private String getToken() {
+        return PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString(
+                TrelloidApplication.TRELLOID_TOKEN, null);
+    }
 
-			AQuery aq = new AQuery(view);
+    private void showCardInLayout(Card card) {
+        AQuery aq = new AQuery(CardActivity.this);
 
-			Member member = getMember(getItem(position).getIdMemberCreator());
-			if (member.getAvatarHash() != null) {
-				aq.id(R.id.avatar).visible().image("https://trello-avatars.s3.amazonaws.com/" + member.getAvatarHash() + "/30.png");
-				aq.id(R.id.initial).invisible();
-			} else {
-				aq.id(R.id.initial).visible().text(member.getInitials());
-				aq.id(R.id.avatar).invisible();
-			}
+        aq.id(R.id.title).text(card.getName());
+        aq.id(R.id.description).text(card.getDesc());
 
-			return view;
-		}
-	}
+        ArrayAdapter<Comment> arrayAdapter = new CommentAdapter(CardActivity.this,
+                R.layout.comment, R.id.text, card.getComments());
+        ((ListView)findViewById(android.R.id.list)).setAdapter(arrayAdapter);
+    }
+
+    private final class CommentAdapter extends ArrayAdapter<Comment> {
+        private CommentAdapter(Context context, int resource, int textViewResourceId,
+                List<Comment> objects) {
+            super(context, resource, textViewResourceId, objects);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View view = super.getView(position, convertView, parent);
+
+            TrelloQuery aq = new TrelloQuery(view);
+
+            String idMemberCreator = getItem(position).getIdMemberCreator();
+            aq.memberImage(idMemberCreator);
+
+            // AQuery aq = new AQuery(view);
+            //
+            // Member member = ((TrelloidApplication)
+            // getContext().getApplicationContext()).getMember(idMemberCreator);
+            // if (member.getAvatarHash() != null) {
+            // aq.id(R.id.avatar).visible().image("https://trello-avatars.s3.amazonaws.com/"
+            // + member.getAvatarHash() + "/30.png");
+            // aq.id(R.id.initial).invisible();
+            // } else {
+            // aq.id(R.id.initial).visible().text(member.getInitials());
+            // aq.id(R.id.avatar).invisible();
+            // }
+
+            return view;
+        }
+    }
 
 }

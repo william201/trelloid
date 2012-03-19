@@ -1,13 +1,20 @@
 package it.gtug.gadc.trelloid;
 
+import it.gtug.gadc.trelloid.auth.TrelloHandle;
+import it.gtug.gadc.trelloid.model.Board;
+import it.gtug.gadc.trelloid.model.CardContainer;
+import it.gtug.gadc.trelloid.model.Member;
+import it.gtug.gadc.trelloid.services.BoardService;
+import it.gtug.gadc.trelloid.services.MemberService;
+import it.gtug.gadc.trelloid.utils.Const;
+import it.gtug.trelloid.adapters.BoardsAdapter;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -17,18 +24,6 @@ import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.json.JSONObject;
 
-import com.androidquery.AQuery;
-import com.androidquery.callback.AjaxCallback;
-import com.androidquery.callback.AjaxStatus;
-
-import it.gtug.gadc.trelloid.auth.TrelloHandle;
-import it.gtug.gadc.trelloid.model.Board;
-import it.gtug.gadc.trelloid.model.CardContainer;
-import it.gtug.gadc.trelloid.model.Member;
-import it.gtug.gadc.trelloid.services.BoardService;
-import it.gtug.gadc.trelloid.services.MemberService;
-import it.gtug.gadc.trelloid.utils.Const;
-import it.gtug.trelloid.adapters.BoardsAdapter;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -38,7 +33,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.RectF;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -51,10 +45,14 @@ import android.support.v4.view.Window;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
+
+import com.androidquery.AQuery;
+import com.androidquery.callback.AjaxCallback;
+import com.androidquery.callback.AjaxStatus;
 
 public class HomeActivity extends FragmentActivity {
 	/*
@@ -106,7 +104,7 @@ public class HomeActivity extends FragmentActivity {
 	protected void onStart() {
 		
 		super.onStart();
-		updateUserOnActionBar(this.me);
+//		updateUserOnActionBar(this.me);
 		
 		
 		
@@ -266,7 +264,7 @@ public class HomeActivity extends FragmentActivity {
 				 */
 				protected void onPostExecute(final Member me) {
 					if(me!=null){					
-						updateUserOnActionBar(me);
+//						updateUserOnActionBar(me);
 						/**
 						 * Ottengo l'avatar dell'utente
 						 */

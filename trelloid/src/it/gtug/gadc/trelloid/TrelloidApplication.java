@@ -2,9 +2,12 @@
 package it.gtug.gadc.trelloid;
 
 import it.gtug.gadc.trelloid.model.Member;
+import it.gtug.gadc.trelloid.services.MemberService;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.jboss.resteasy.client.ProxyFactory;
 
 import android.app.Application;
 
@@ -23,4 +26,16 @@ public class TrelloidApplication extends Application {
     public Map<String, Member> getMembersCache() {
         return membersCache;
     }
+    
+    public Member getMember(String idMemberCreator) {
+        Member member = membersCache.get(idMemberCreator);
+        if (member == null) {
+            MemberService memberService = ProxyFactory.create(MemberService.class, "https://api.trello.com");
+            member = memberService.findMembers(idMemberCreator, TrelloidApplication.CONSUMER_KEY);
+            membersCache.put(idMemberCreator, member);
+        }
+        return member;
+    }
+
+
 }
