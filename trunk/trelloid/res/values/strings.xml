@@ -4,5 +4,7 @@
     <string name="hello">Hello World, TrelloidActivity!</string>
     <string name="app_name">Trelloid</string>
     <string name="commenta">Commenta</string>
+    <string name="edit">Modifica</string>
+    <string name="done">Salva</string>
     <string name="connetti">Connetti</string>
 </resources>
