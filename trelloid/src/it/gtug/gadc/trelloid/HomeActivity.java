@@ -28,6 +28,8 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -55,6 +57,9 @@ import com.androidquery.callback.AjaxCallback;
 import com.androidquery.callback.AjaxStatus;
 
 public class HomeActivity extends FragmentActivity {
+	private static final String AVATAR_IMAGE_EXTENSION = ".png";
+	private static final String AVATAR_PIXEL_DIMENSIONS = "50";
+	private static final String DOMAIN_TRELLO_AVATARS = "https://trello-avatars.s3.amazonaws.com/";
 	/*
 	 * Gli id dei pulsanti
 	 */
@@ -67,8 +72,10 @@ public class HomeActivity extends FragmentActivity {
 	 * Gli id dei nostri dialog
 	 */
 	private static final int DIALOG_PROGRESS = 0;
+	private static final int DIALOG_LOAD_USER_DATA = 1;
 	
 	private static final String TAG="HomeActivity";
+	
 	
 	
 	private Member me;
@@ -83,9 +90,7 @@ public class HomeActivity extends FragmentActivity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setTheme(THEME);
         setContentView(R.layout.boardlist);
-        RegisterBuiltin.register(ResteasyProviderFactory.getInstance());
-        
- 		
+        updateUserOnActionBar(this.me);
   		doAuthTrello();
 	}
 
@@ -104,11 +109,7 @@ public class HomeActivity extends FragmentActivity {
 	protected void onStart() {
 		
 		super.onStart();
-//		updateUserOnActionBar(this.me);
-		
-		
-		
-		
+	
 	}
 	/**
 	 * Aggiorna i dati mostrati nella actionBar con quelli contenuti nel Member this.me
@@ -116,8 +117,8 @@ public class HomeActivity extends FragmentActivity {
 	private void updateUserOnActionBar(Member me) {
 		ActionBar actionBar = this.getSupportActionBar();
 		if(me==null){
-			actionBar.setTitle("Username");
-			actionBar.setSubtitle("Nome Cognome");
+			actionBar.setTitle("Loading..");
+			actionBar.setSubtitle(" ");
 	        //actionBar.setDisplayHomeAsUpEnabled(true);
 			}
 		else{
@@ -164,7 +165,7 @@ public class HomeActivity extends FragmentActivity {
 		
 	    HttpURLConnection connection=null;
 	    if(avatarHash!=null){
-	    	String avatarUrl = "https://trello-avatars.s3.amazonaws.com/"+avatarHash+"/30.png";
+	    	String avatarUrl = DOMAIN_TRELLO_AVATARS+avatarHash+"/"+AVATAR_PIXEL_DIMENSIONS+AVATAR_IMAGE_EXTENSION;
 	    
 			try {			
 				connection = (HttpURLConnection)new URL(avatarUrl).openConnection();
@@ -174,15 +175,15 @@ public class HomeActivity extends FragmentActivity {
 			    bitmapOrg = BitmapFactory.decodeStream(input);
 			} catch (MalformedURLException e) {
 				showToast("Impossibile ottenere l'avatar dell'utente: "+e.getMessage()+" "+e.getCause());
-				Log.e(TAG,"Impossibile reperire avatar da url: "+avatarUrl);
+				Log.e(TAG,"Impossibile reperire avatar da url: "+avatarUrl,e);
 				bitmapOrg = BitmapFactory.decodeResource(getResources(),R.drawable.sample_avatar);
 			} catch (IOException e) {
 				showToast("Impossibile ottenere l'avatar dell'utente: "+e.getMessage()+" "+e.getCause());
-				Log.e(TAG,"Impossibile reperire avatar da url: "+avatarUrl);
+				Log.e(TAG,"Impossibile reperire avatar da url: "+avatarUrl,e);
 				bitmapOrg = BitmapFactory.decodeResource(getResources(),R.drawable.sample_avatar);
 			}
 	    }else{
-	    	bitmapOrg = BitmapFactory.decodeResource(getResources(),R.drawable.sample_avatar);
+	    	bitmapOrg = BitmapFactory.decodeResource(getResources(),R.drawable.loading_avatar);
 	    }
 
 		int borderSize = 5;
@@ -225,7 +226,7 @@ public class HomeActivity extends FragmentActivity {
        handler.setScope(PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getString(MainPreferencesActivity.AUTH_TYPE_PREF, "read,write"));
        handler.setExpiration(PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getString(MainPreferencesActivity.AUTH_EXPIRE_PREF, "30days"));
        
-       String url = "https://trello.com/1/authorize?key="+Const.CONSUMER_KEY+"&response_type=fragment";
+       String url = "https://trello.com/1/connect?key="+Const.CONSUMER_KEY+"&response_type=fragment";
        AQuery aq = new AQuery(HomeActivity.this);
        ProgressDialog authDialog=new ProgressDialog(this);
        authDialog.setIndeterminate(true);
@@ -237,7 +238,7 @@ public class HomeActivity extends FragmentActivity {
        
        aq.auth(handler).progress(authDialog).ajax(url, JSONObject.class, new AjaxCallback<JSONObject>(){
     	   /**
-    	    * Diciamo che l'autenticazione ha avuto successo Devo mo
+    	    * Diciamo che l'autenticazione ha avuto successo. Devo scaricare le boards, l'avatar e i dati utente
     	    */
     	   @Override
 		public void callback(String url, JSONObject jsnObj, AjaxStatus status) {
@@ -254,17 +255,18 @@ public class HomeActivity extends FragmentActivity {
 				protected Member doInBackground(Void... params) {
 					try {
 						return getMemberMe();
-					} catch (ClientResponseFailure e) {
-						showToast("Impossibile scaricare le info dell'utente");
+					} catch (Exception e) {
+						Log.e(TAG, "Impossibile ottenere memberMe. Token:"+getMyToken()+" ConsumerKey"+Const.CONSUMER_KEY,e);
+						//NOTA: Si può accedere alla UI solo dal Thread principale, quindi: showToast("Impossibile scaricare le info dell'utente"); andrebbe in errore
 						return null;
 					}
 				}
 				/**
-				 * Aggiorno i dati nella barra in alto
+				 * Devo aggiornare le info mostrate sulla action bar
 				 */
 				protected void onPostExecute(final Member me) {
 					if(me!=null){					
-//						updateUserOnActionBar(me);
+						updateUserOnActionBar(me);
 						/**
 						 * Ottengo l'avatar dell'utente
 						 */
@@ -274,8 +276,8 @@ public class HomeActivity extends FragmentActivity {
 							protected Drawable doInBackground(Void... params) {
 								try {
 									return loadUserAvatar(me.getAvatarHash());
-								} catch (ClientResponseFailure e) {
-									showToast("Impossibile scaricare l'avatar");
+								} catch (Exception e) {
+									Log.e(TAG, "Impossibile ottenere avatar. AvatarHash:"+me.getAvatarHash()+" Token:"+getMyToken()+" ConsumerKey"+Const.CONSUMER_KEY,e);
 									return null;
 								}
 							}
@@ -283,15 +285,20 @@ public class HomeActivity extends FragmentActivity {
 							 * Aggiorno i dati nella barra in alto
 							 */
 							protected void onPostExecute(final Drawable avatar) {
-								if(me!=null){					
+								if(avatar!=null){					
 									/*
 									 *Passa nel ciclo dell'onPreparateOptionsMenu
 									 */
 									setMyAvatar(avatar);
 									invalidateOptionsMenu();
 								}
+								else{
+									showToast("Impossibile scaricare l'avatar");
+								}
 							}
 						}.execute();
+					}else{
+						showToast("Impossibile scaricare le info dell'utente");
 					}
 				}
 			}.execute();
@@ -307,7 +314,8 @@ public class HomeActivity extends FragmentActivity {
 				protected ArrayList<Board> doInBackground(Void... params) {
 					try {
 						return getMyBoards();
-					} catch (ClientResponseFailure e) {
+					} catch (Exception e) {
+						Log.e(TAG, "Impossibile ottenere boards utente. Member:"+me.getId()+" Token:"+getMyToken()+" ConsumerKey"+Const.CONSUMER_KEY,e);
 						showToast("Impossibile scaricare le boards dell'utente");
 						return new ArrayList<Board>();
 					}
@@ -335,22 +343,26 @@ public class HomeActivity extends FragmentActivity {
 									Board board=null;
 									try{
 										board = getBoardWithLists(selectedBoard); 
-									}catch (ClientResponseFailure e) {
-										showToast("Impossibile scaricare la board"+selectedBoard.getName()+": "+e.getMessage()+" "+e.getCause());
-										
+									}catch (Exception e) {
+										Log.e(TAG, "Impossibile ottenere le lists dell'utente. BoardId:"+selectedBoard.getId()+" Token:"+getMyToken()+" ConsumerKey"+Const.CONSUMER_KEY,e);
 									}
 									return board;
 								}
 
 								protected void onPostExecute(Board board) {
 									
-									Intent intent = new Intent();
-									intent.setClass(HomeActivity.this, BoardActivity.class);
-									intent.putExtra("title",board.getName());
-									intent.putExtra("board", board);
-									intent.putExtra("boardId", board.getId());
-									dismissDialog(DIALOG_PROGRESS);
-									startActivity(intent);
+									if(board!=null){
+										Intent intent = new Intent();
+									
+										intent.setClass(HomeActivity.this, BoardActivity.class);
+										intent.putExtra("title",board.getName());
+										intent.putExtra("board", board);
+										intent.putExtra("boardId", board.getId());
+										dismissDialog(DIALOG_PROGRESS);
+										startActivity(intent);
+									}else{
+										showToast("Impossibile scaricare la board"+selectedBoard.getName());
+									}
 									
 								}			
 
@@ -378,13 +390,19 @@ public class HomeActivity extends FragmentActivity {
 	 * @param view
 	 */
 	public void fetchMyBoards(View view){
-		List<Board> myBoards = getMyBoards();
-		showToast("Ho "+myBoards.size()+ " board!");
-		int i=1;
-		for (Board board : myBoards) {
-			showToast("Board"+i+": "+board.getName());
-			i++;
+		List<Board> myBoards;
+		try {
+			myBoards = getMyBoards();
+			showToast("Ho "+myBoards.size()+ " board!");
+			int i=1;
+			for (Board board : myBoards) {
+				showToast("Board"+i+": "+board.getName());
+				i++;
+			}
+		} catch (Exception e) {
+			showToast("impossibile scaricare boards");
 		}
+		
 	}
 	
 	
@@ -400,7 +418,7 @@ public class HomeActivity extends FragmentActivity {
 			
 			return null;
 		}
-		BoardService service = ProxyFactory.create(BoardService.class,"https://api.trello.com");
+		BoardService service = ProxyFactory.create(BoardService.class,Const.HTTPS_API_TRELLO_COM);
 		List<CardContainer> lists = service.findListsForBoard(board.getId(), Const.CONSUMER_KEY,token);
 		board.setContainers(lists);
 		
@@ -411,8 +429,8 @@ public class HomeActivity extends FragmentActivity {
 	 * @return
 	 * @throws ClientResponseFailure
 	 */
-	private ArrayList<Board> getMyBoards() throws ClientResponseFailure{
-		MemberService service= ProxyFactory.create(MemberService.class, "https://api.trello.com");
+	private ArrayList<Board> getMyBoards() throws Exception{
+		MemberService service= ProxyFactory.create(MemberService.class, Const.HTTPS_API_TRELLO_COM);
 		Member me=getMemberMe();
 		if( me==null){
 			showToast("Occorre effettuare l'autenticazione prima. Utente me: null");
@@ -427,7 +445,7 @@ public class HomeActivity extends FragmentActivity {
 	 * @return
 	 * @throws ClientResponseFailure
 	 */
-	private Member getMemberMe() throws ClientResponseFailure{
+	private Member getMemberMe() throws Exception{
 		String token=getMyToken();
 		if(token==null || token.length()<1){
 			
@@ -444,7 +462,7 @@ public class HomeActivity extends FragmentActivity {
 //			member = memberService.findMembers(idMemberCreator, SplashScreenActivity.CONSUMER_KEY);
 //			membersCache.put(idMemberCreator, member);
 //		}
-		MemberService memberService = ProxyFactory.create(MemberService.class, "https://api.trello.com");
+		MemberService memberService = ProxyFactory.create(MemberService.class, Const.HTTPS_API_TRELLO_COM);
 		Map<String, Member> membersCache = application.getMembersCache();
 		Member me = memberService.findMe(Const.CONSUMER_KEY, token);
 		membersCache.put(me.getId(), me);
@@ -462,6 +480,9 @@ public class HomeActivity extends FragmentActivity {
        case DIALOG_PROGRESS:
        	 dialog= ProgressDialog.show(HomeActivity.this,"","Caricamento in corso...");
        	 break;
+       case DIALOG_LOAD_USER_DATA:
+         	 dialog= ProgressDialog.show(HomeActivity.this,"","Caricamento dati utente in corso...");
+         	 break;
        default:
        }
        return dialog;

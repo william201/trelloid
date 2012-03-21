@@ -18,10 +18,10 @@ public class TrelloidApplication extends Application {
 
     static final String CONSUMER_SECRET = "fb29e30637c7a10b595d42879bd08f529f65479eafd11449aff787bc749b58ea";
 
-    static final String APP_NAME = "Trelloid";
+    static final String APP_NAME = "Trelloid"; 
     public static final String TRELLOID_TOKEN = "aq.trelloid.token";
     public static final String TRELLOID_SECRET = "aq.trelloid.secret";
-    private static final String TRELLOID_MEMBER_ID = "aq.trelloid.secret";
+    
 
     public Map<String, Member> getMembersCache() {
         return membersCache;

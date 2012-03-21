@@ -1,6 +1,7 @@
 package it.gtug.gadc.trelloid.services;
 
 import it.gtug.gadc.trelloid.model.TokenData;
+import it.gtug.gadc.trelloid.model.TrelloToken;
 
 
 import javax.ws.rs.GET;
@@ -16,5 +17,9 @@ public interface TokenService {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{token}/member")
     TokenData getTokenMemberInfo(@PathParam("token") String token,@QueryParam("key")String key);
-
+    
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{token}")
+    TrelloToken getTrelloToken(@PathParam("token") String token, @QueryParam("key")String key);
 }
