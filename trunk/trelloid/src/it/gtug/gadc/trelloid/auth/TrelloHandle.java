@@ -2,10 +2,16 @@
 package it.gtug.gadc.trelloid.auth;
 
 import it.gtug.gadc.trelloid.TrelloidApplication;
+import it.gtug.gadc.trelloid.model.TrelloToken;
+import it.gtug.gadc.trelloid.services.TokenService;
+import it.gtug.gadc.trelloid.utils.Const;
 
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.util.List;
 
@@ -16,6 +22,7 @@ import org.apache.http.HttpRequest;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
+import org.jboss.resteasy.client.ProxyFactory;
 
 import android.app.Activity;
 import android.content.Context;
@@ -126,8 +133,14 @@ public class TrelloHandle extends AccountHandle {
         task.execute();
 
     }
+    
+    @Override
+	protected synchronized void failure(Context ctx, int arg1, String arg2) {
+		System.out.println("Errore!");
+		super.failure(ctx, arg1, arg2);
+	}
 
-    private class Task extends AsyncTask<String, String, String> implements OnCancelListener,
+	private class Task extends AsyncTask<String, String, String> implements OnCancelListener,
             Runnable {
 
         private AbstractAjaxCallback<?, ?> cb;
@@ -373,14 +386,42 @@ public class TrelloHandle extends AccountHandle {
     @Override
     public boolean authenticated() {
         if (token != null) {
+        	TokenService service=  ProxyFactory.create(TokenService.class,Const.HTTPS_API_TRELLO_COM);
+        	TrelloToken trelloToken =null;
+        	try{
+            	//FIXME: In attesa che Luca Masini mi aiuti a sistemare gli errori di 401 nel service che causano stackOverflow!
+        		//trelloToken = service.getTrelloToken(token, Const.CONSUMER_KEY);
+        		URL url=new URL(Const.HTTPS_API_TRELLO_COM+"/1/tokens/"+token+"?key="+Const.CONSUMER_KEY);
+        		HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        		int responseCode = urlConnection.getResponseCode();
+        		//FIXME: In realtà dovrei testare la validità dell'expiration.
+    			//Per ora mi basta che il server NON risponda 401(Unauthorized) ma solo un codice di successo 2xx
+        		if(responseCode >=200&&responseCode<300){
+        			Log.i(TAG, "Token valido: "+url);
+        			return true;
+        			
+        		}else if(responseCode==404){
+        			Log.w(TAG,"Token non trovato: "+url);
+        			return false;
+        		}else if(responseCode==401){
+        			Log.w(TAG,"Token non autorizzato: "+url);
+        			return false;
+        		}
+            }catch (Exception e) {
+				Log.e(TAG, "Impossibile verificare il token: "+token);
+			}
+        	if(trelloToken!=null&&trelloToken.isValid()){
+        		return true;
+        	}
             //Context context = act.getApplicationContext();
-            CharSequence text = "Authenticated!Token:" + token;
-            int duration = Toast.LENGTH_LONG;
-
-            Toast toast = Toast.makeText(mainApp, text, duration);
-            toast.show();
+//            CharSequence text = "Authenticated!Token:" + token;
+//            int duration = Toast.LENGTH_LONG;
+//
+//            Toast toast = Toast.makeText(mainApp, text, duration);
+//            toast.show();
         }
-        return token != null && secret != null;
+       // return token != null && secret != null;
+        return false;
     }
 
     @Override
