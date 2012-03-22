@@ -1,15 +1,19 @@
 
 package it.gtug.gadc.trelloid;
 
+import it.gtug.gadc.trelloid.model.Board;
 import it.gtug.gadc.trelloid.model.Member;
 import it.gtug.gadc.trelloid.services.MemberService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.resteasy.client.ProxyFactory;
 
 import android.app.Application;
+import android.graphics.drawable.Drawable;
+import android.util.Log;
 
 public class TrelloidApplication extends Application {
     private Map<String, Member> membersCache = new HashMap<String, Member>();
@@ -22,6 +26,10 @@ public class TrelloidApplication extends Application {
     public static final String TRELLOID_TOKEN = "aq.trelloid.token";
     public static final String TRELLOID_SECRET = "aq.trelloid.secret";
     
+    private ArrayList<Board> boards;
+    private boolean authenticated;
+    private String myMemberId;
+    private Drawable myAvatar;
 
     public Map<String, Member> getMembersCache() {
         return membersCache;
@@ -36,6 +44,78 @@ public class TrelloidApplication extends Application {
         }
         return member;
     }
+    //singleton design pattern
+    static TrelloidApplication instance;  
+    public static TrelloidApplication getInstance(){
+            if(instance==null){
+                    Log.v("TrelloidApplication", "instance created");
+                    instance=new TrelloidApplication();
+            }
+            Log.v("TrelloidApplication", "instance returned");
+            return instance;
+    }
+    
+    @Override
+    public void onCreate() {
+            super.onCreate();
+            Log.v("TrelloidApplication", "onCreate");
+            
+            TrelloidApplication trelloid=getInstance();
+            trelloid.boards=null;
+            trelloid.membersCache=new HashMap<String, Member>();
+            trelloid.authenticated=false;
+            trelloid.myAvatar=null;
+            trelloid.myMemberId=null;
+    }
 
+    public ArrayList<Board> getBoards() {
+        return boards;
+    }
+
+    public void setBoards(ArrayList<Board> boards) {
+        this.boards = boards;
+    }
+
+    public void setMembersCache(Map<String, Member> membersCache) {
+        this.membersCache = membersCache;
+    }
+
+    public boolean isAuthenticated() {
+        return authenticated;
+    }
+
+    public void setAuthenticated(boolean authenticated) {
+        this.authenticated = authenticated;
+    }
+
+    public String getMyMemberId() {
+        return myMemberId;
+    }
+
+    public void setMyMemberId(String myMemberId) {
+        this.myMemberId = myMemberId;
+    }
+
+    public boolean isMeLoaded() {
+        if(myMemberId!=null&&myMemberId.length()>2){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public Drawable getMyAvatar() {
+        return myAvatar;
+    }
+
+    public void setMyAvatar(Drawable myAvatar) {
+        this.myAvatar = myAvatar;
+    }
+
+    public boolean isBoardsLoaded() {
+       if(boards!=null){
+           return true;
+       }return false;
+    }
 
 }

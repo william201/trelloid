@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.text.html.HTMLDocument.HTMLReader.ParagraphAction;
+
 import org.jboss.resteasy.client.ClientResponseFailure;
 import org.jboss.resteasy.client.ProxyFactory;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
@@ -57,7 +59,9 @@ import com.androidquery.callback.AjaxCallback;
 import com.androidquery.callback.AjaxStatus;
 
 public class HomeActivity extends FragmentActivity {
-	private static final String AVATAR_IMAGE_EXTENSION = ".png";
+    TrelloidApplication app=TrelloidApplication.getInstance();
+    
+    private static final String AVATAR_IMAGE_EXTENSION = ".png";
 	private static final String AVATAR_PIXEL_DIMENSIONS = "50";
 	private static final String DOMAIN_TRELLO_AVATARS = "https://trello-avatars.s3.amazonaws.com/";
 	/*
@@ -68,18 +72,26 @@ public class HomeActivity extends FragmentActivity {
 	private static final int PULSANTE_PREFERENCES=3;
 	
 	private static ProgressDialog dialog;
+	private static ProgressDialog authDialog;
+
 	/*
 	 * Gli id dei nostri dialog
 	 */
 	private static final int DIALOG_PROGRESS = 0;
 	private static final int DIALOG_LOAD_USER_DATA = 1;
+	private static final int DIALOG_TEST_TOKEN = 2;
+	 public static final int DIALOG_LOAD_USER_BOARD = 3;
+	 public static final int DIALOG_LOAD_USER_BOARDS = 4;
+	 public static final int DIALOG_LOAD_USER_AVATAR = 5;
 	
 	private static final String TAG="HomeActivity";
+ 
+   
+	private TokenTesterAsyncTask tokenTester=null;
+	private LoadAvatarAsyncTask avatarLoader=null;
+	private UserInfoLoaderAsyncTask userInfoLoader=null;
+	private UserBoardsLoaderAsyncTask userBoardsLoader=null;
 	
-	
-	
-	private Member me;
-	private Drawable myAvatar;
 	
 	private static int THEME = R.style.Theme_Trelloid;
 
@@ -90,27 +102,18 @@ public class HomeActivity extends FragmentActivity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setTheme(THEME);
         setContentView(R.layout.boardlist);
-        updateUserOnActionBar(this.me);
-  		doAuthTrello();
-	}
-
-	/**
-	 * Invoco l'autenticazione! Nessuna view, non ho premuto su un pulsante ma la chiamo da programma.
-	 */
-	private void doAuthTrello() {
-		authTrello(null);
+        
+        updateUserOnActionBar(null);
+        
+        this.tokenTester = new TokenTesterAsyncTask();
+        this.avatarLoader= new LoadAvatarAsyncTask();
+        this.userInfoLoader=new UserInfoLoaderAsyncTask();
+        this.userBoardsLoader=new UserBoardsLoaderAsyncTask();
+        
+        tokenTester.execute();
 	}
 	
 	
-	/**
-	 * Imposto il nome e cognome come titolo e sottotitolo della actionBar
-	 */
-	@Override
-	protected void onStart() {
-		
-		super.onStart();
-	
-	}
 	/**
 	 * Aggiorna i dati mostrati nella actionBar con quelli contenuti nel Member this.me
 	 */
@@ -148,8 +151,9 @@ public class HomeActivity extends FragmentActivity {
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		
-		if(this.getMyAvatar()!=null){
-			menu.findItem(PULSANTE_AVATAR).setIcon(myAvatar);
+		Drawable avatar = app.getMyAvatar();
+        if(avatar!=null){
+			menu.findItem(PULSANTE_AVATAR).setIcon(avatar);
 		}
 		super.onPrepareOptionsMenu(menu);
 		return true;
@@ -215,26 +219,24 @@ public class HomeActivity extends FragmentActivity {
 	 }
 	
 	/**
-	  * Prende in carico la visualizzazione e la gestione dell'autenticazione
-	  * Ha come parametro view per essere richiamato dall'onclick nel layout
-	  * @param view
+	  * Prende in carico la  gestione dell'autenticazione
 	  */
-	public void authTrello(View view){
+	public void doAuthTrello(){
 		
-      TrelloHandle handler = new TrelloHandle(this,getApplicationContext(), Const.CONSUMER_KEY, Const.CONSUMER_SECRET);
+       TrelloHandle handler = new TrelloHandle(this,getApplicationContext(), Const.CONSUMER_KEY, Const.CONSUMER_SECRET);
        handler.setAppName(Const.APP_NAME);
        handler.setScope(PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getString(MainPreferencesActivity.AUTH_TYPE_PREF, "read,write"));
        handler.setExpiration(PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getString(MainPreferencesActivity.AUTH_EXPIRE_PREF, "30days"));
        
        String url = "https://trello.com/1/connect?key="+Const.CONSUMER_KEY+"&response_type=fragment";
        AQuery aq = new AQuery(HomeActivity.this);
-       ProgressDialog authDialog=new ProgressDialog(this);
+       authDialog=new ProgressDialog(this);
        authDialog.setIndeterminate(true);
        authDialog.setCancelable(false);
        authDialog.setInverseBackgroundForced(false);
        authDialog.setCanceledOnTouchOutside(true);
        authDialog.setTitle("Loading..");
-       authDialog.setMessage("Colloquio con il server Trello in corso.."); 
+       authDialog.setMessage("Autenticazione con il server Trello in corso.."); 
        
        aq.auth(handler).progress(authDialog).ajax(url, JSONObject.class, new AjaxCallback<JSONObject>(){
     	   /**
@@ -244,143 +246,9 @@ public class HomeActivity extends FragmentActivity {
 		public void callback(String url, JSONObject jsnObj, AjaxStatus status) {
 			super.callback(url, jsnObj, status);
 			
-			showDialog(DIALOG_PROGRESS);
+			userBoardsLoader.execute();
 			
-			/**
-			 * Ottengo le info utente
-			 */
-			new AsyncTask<Void, Void, Member>() {
-
-				@Override
-				protected Member doInBackground(Void... params) {
-					try {
-						return getMemberMe();
-					} catch (Exception e) {
-						Log.e(TAG, "Impossibile ottenere memberMe. Token:"+getMyToken()+" ConsumerKey"+Const.CONSUMER_KEY,e);
-						//NOTA: Si può accedere alla UI solo dal Thread principale, quindi: showToast("Impossibile scaricare le info dell'utente"); andrebbe in errore
-						return null;
-					}
-				}
-				/**
-				 * Devo aggiornare le info mostrate sulla action bar
-				 */
-				protected void onPostExecute(final Member me) {
-					if(me!=null){					
-						updateUserOnActionBar(me);
-						/**
-						 * Ottengo l'avatar dell'utente
-						 */
-						new AsyncTask<Void, Void, Drawable>() {
-
-							@Override
-							protected Drawable doInBackground(Void... params) {
-								try {
-									return loadUserAvatar(me.getAvatarHash());
-								} catch (Exception e) {
-									Log.e(TAG, "Impossibile ottenere avatar. AvatarHash:"+me.getAvatarHash()+" Token:"+getMyToken()+" ConsumerKey"+Const.CONSUMER_KEY,e);
-									return null;
-								}
-							}
-							/**
-							 * Aggiorno i dati nella barra in alto
-							 */
-							protected void onPostExecute(final Drawable avatar) {
-								if(avatar!=null){					
-									/*
-									 *Passa nel ciclo dell'onPreparateOptionsMenu
-									 */
-									setMyAvatar(avatar);
-									invalidateOptionsMenu();
-								}
-								else{
-									showToast("Impossibile scaricare l'avatar");
-								}
-							}
-						}.execute();
-					}else{
-						showToast("Impossibile scaricare le info dell'utente");
-					}
-				}
-			}.execute();
-			
-			
-			
-			/*
-			 * Eseguo il fetch asincrono delle boards
-			 */
-			new AsyncTask<Void, Void, ArrayList<Board>>() {
-
-				@Override
-				protected ArrayList<Board> doInBackground(Void... params) {
-					try {
-						return getMyBoards();
-					} catch (Exception e) {
-						Log.e(TAG, "Impossibile ottenere boards utente. Member:"+me.getId()+" Token:"+getMyToken()+" ConsumerKey"+Const.CONSUMER_KEY,e);
-						showToast("Impossibile scaricare le boards dell'utente");
-						return new ArrayList<Board>();
-					}
-				}
-				/**
-				 * Mostro in lista le boards ottenute
-				 */
-				protected void onPostExecute(final ArrayList<Board> boards) {
-					ListView boardsListView=(ListView)findViewById(R.id.boardsListView);
-			  		boardsListView.setAdapter(new BoardsAdapter(getApplicationContext(), R.layout.boardlist_item, R.id.boardDescription, boards, HomeActivity.this));
-			  		boardsListView.setOnItemClickListener(new OnItemClickListener() {
-					    /**
-					     * Sul click sulla board devo scaricarne i dati per passarla al metodo suvccessivo
-					     */
-			  			public void onItemClick(AdapterView<?> parent, View item,
-					        int position, long id) {
-					    	
-					    	final Board selectedBoard = boards.get(position);
-					    	showDialog(DIALOG_PROGRESS);
-							
-							new AsyncTask<Void, Void, Board>() {
-
-								@Override
-								protected Board doInBackground(Void... params) {
-									Board board=null;
-									try{
-										board = getBoardWithLists(selectedBoard); 
-									}catch (Exception e) {
-										Log.e(TAG, "Impossibile ottenere le lists dell'utente. BoardId:"+selectedBoard.getId()+" Token:"+getMyToken()+" ConsumerKey"+Const.CONSUMER_KEY,e);
-									}
-									return board;
-								}
-
-								protected void onPostExecute(Board board) {
-									
-									if(board!=null){
-										Intent intent = new Intent();
-									
-										intent.setClass(HomeActivity.this, BoardActivity.class);
-										intent.putExtra("title",board.getName());
-										intent.putExtra("board", board);
-										intent.putExtra("boardId", board.getId());
-										dismissDialog(DIALOG_PROGRESS);
-										startActivity(intent);
-									}else{
-										showToast("Impossibile scaricare la board"+selectedBoard.getName());
-									}
-									
-								}			
-
-							}.execute();
-					    
-					    }
-					    });
-			  		dismissDialog(DIALOG_PROGRESS);
-				}			
-
-			}.execute();
-			
-			
-		}
-
-		
-    	  
-     		//boardsListView.setAdapter(new BoardsAdapter(getApplicationContext(), R.layout.boardlist_item, R.id.boardDescription, boards, this));
+    	   }
        });     
        
 	}
@@ -451,7 +319,7 @@ public class HomeActivity extends FragmentActivity {
 			
 			return null;
 		}
-		TrelloidApplication application = (TrelloidApplication) getApplication();
+		
 
 //		Si può pensare di utilizzare la cache? COme si gestisce l'eventuale logout??
 		
@@ -463,7 +331,7 @@ public class HomeActivity extends FragmentActivity {
 //			membersCache.put(idMemberCreator, member);
 //		}
 		MemberService memberService = ProxyFactory.create(MemberService.class, Const.HTTPS_API_TRELLO_COM);
-		Map<String, Member> membersCache = application.getMembersCache();
+		Map<String, Member> membersCache = app.getMembersCache();
 		Member me = memberService.findMe(Const.CONSUMER_KEY, token);
 		membersCache.put(me.getId(), me);
 		return me;
@@ -475,7 +343,6 @@ public class HomeActivity extends FragmentActivity {
     * Gestisce le dialog che si possono aprire
     */
    protected Dialog onCreateDialog(int id) {
-       Dialog dialog=null;
        switch(id) {
        case DIALOG_PROGRESS:
        	 dialog= ProgressDialog.show(HomeActivity.this,"","Caricamento in corso...");
@@ -483,6 +350,18 @@ public class HomeActivity extends FragmentActivity {
        case DIALOG_LOAD_USER_DATA:
          	 dialog= ProgressDialog.show(HomeActivity.this,"","Caricamento dati utente in corso...");
          	 break;
+       case DIALOG_TEST_TOKEN:
+           dialog= ProgressDialog.show(HomeActivity.this,"","Verifica credenziali in corso...");
+           break;
+       case DIALOG_LOAD_USER_BOARDS:
+           dialog= ProgressDialog.show(HomeActivity.this,"","Caricamento delle boards dell'utente in corso...");
+           break;
+       case DIALOG_LOAD_USER_BOARD:
+           dialog= ProgressDialog.show(HomeActivity.this,"","Caricamento delle liste della board in corso...");
+           break; 
+       case DIALOG_LOAD_USER_AVATAR:
+           dialog=ProgressDialog.show(HomeActivity.this,"","Caricamento dell'avatar in corso...");
+           break; 
        default:
        }
        return dialog;
@@ -493,7 +372,7 @@ public class HomeActivity extends FragmentActivity {
     */
    private void showToast(String message){
    	
-       Context context = getApplicationContext();
+        Context context = getApplicationContext();
 
 		int duration = Toast.LENGTH_LONG;
 
@@ -501,19 +380,294 @@ public class HomeActivity extends FragmentActivity {
 		toast.show();
    }
 
-public Member getMe() {
-	return me;
-}
 
-public void setMe(Member me) {
-	this.me = me;
-}
+/**
+ * Imposta le boards su una listView
+ * @param boards
+ * @param boardsListView
+ */
+private void setBoardsListView(final ArrayList<Board> boards, ListView boardsListView) {
+    final BoardListsLoaderAsyncTask boardListsLoader=new BoardListsLoaderAsyncTask();
+    boardsListView.setAdapter(new BoardsAdapter(getApplicationContext(), R.layout.boardlist_item, R.id.boardDescription, boards, HomeActivity.this));
+    boardsListView.setOnItemClickListener(new OnItemClickListener() {
+        /**
+         * Sul click sulla board devo scaricarne i dati per passarla al metodo successivo
+         */
+        public void onItemClick(AdapterView<?> parent, View item, int position, long id) {
+            boardListsLoader.execute(boards.get(position));       
+            }
+        });
+    }
+    /**
+     * Task per il check dell token memorizzato enlle preferences
+     * @author malo
+     *
+     */
+    private class TokenTesterAsyncTask extends AsyncTask<Void, Void, Boolean> {
+    
+        private static final String TAG = "TokenTesterAsyncTask";
 
-public Drawable getMyAvatar() {
-	return myAvatar;
-}
+        @Override
+        protected void onPreExecute() {
+            
+            super.onPreExecute();
+            showDialog(DIALOG_TEST_TOKEN);
+        }
+    
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            if(app.isAuthenticated()){
+                return true;
+            }
+            URL url=null;
+            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(HomeActivity.this);
+            try {             
+                url = new URL(Const.HTTPS_API_TRELLO_COM+"/1/tokens/"+settings.getString(TrelloidApplication.TRELLOID_TOKEN, "blank")+"?key="+Const.CONSUMER_KEY);
+            } catch (Exception e) {
+                Log.e(TAG, "Impossibile determinare validità token:"+url,e);
+                return null;
+            }
+            Integer responseCode=null;
+            try {
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                responseCode = urlConnection.getResponseCode();
+            } catch (IOException e) {
+                
+                Log.e(TAG, "Impossibile ricavare lo stato della connessione http all'url: "+url);
+                return false;
+            }
+            //FIXME: In realtà dovrei testare la validità dell'expiration.
+            //Per ora mi basta che il server NON risponda 401(Unauthorized) ma solo un codice di successo 2xx
+            if(responseCode >=200&&responseCode<300){
+                Log.i(TAG, "Token valido: "+url);
+                return true;
+                
+            }
+            else {
+                Log.w(TAG,"Token non valido: "+url);
+                
+                Editor editor = settings.edit();
+                //Sbianco il token
+                editor.putString(TrelloidApplication.TRELLOID_TOKEN, null);
+                editor.putString(TrelloidApplication.TRELLOID_SECRET, null);
+                editor.commit();
+                return false;
+            }
+        }
+        
+        protected void onPostExecute(final Boolean valid) {
+            try {
+                dismissDialog(DIALOG_TEST_TOKEN);
+            } catch (Exception e) {
+                Log.e(this.TAG, "IMpossibile dismettere la dialog DIALOG_TEST_TOKEN",e);
+            }
+            if(valid!=null&&valid.booleanValue()==true){   
+                app.setAuthenticated(true);
+                if(app.isMeLoaded()&&app.isBoardsLoaded()){
+                    ListView boardsListView=(ListView)findViewById(R.id.boardsListView);
+                    setBoardsListView(app.getBoards(), boardsListView);
+                    updateUserOnActionBar(app.getMember(app.getMyMemberId()));                        
+                }else{
+                    userBoardsLoader.execute();
+                }
+            }
+            else{
+                doAuthTrello();
+            }
+        
+        }
+    
+    
+    }
+    /**
+     * Task per reperire l'avatar dell'utente
+     * @author malo
+     *
+     */
+    private class LoadAvatarAsyncTask extends AsyncTask<String, Void, Drawable>{
+    
 
-public void setMyAvatar(Drawable avatar) {
-	this.myAvatar = avatar;
-}
+        private final String TAG = "LoadAvatarAsyncTask";
+        
+        
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            showDialog(DIALOG_LOAD_USER_AVATAR);
+        }
+        @Override
+        protected Drawable doInBackground(String... params) {
+            if(params.length<1){
+                Log.e(this.TAG,"Nessun hashtag fra i parametri");
+                return null;
+            }
+            String avatarHash=params[0];
+            try {
+                return loadUserAvatar(avatarHash);
+            } catch (Exception e) {
+                Log.e(TAG, "Impossibile ottenere avatar. AvatarHash:"+avatarHash+" Token:"+getMyToken()+" ConsumerKey"+Const.CONSUMER_KEY,e);
+                return null;
+            }
+        }
+        /**
+         * Aggiorno i dati nella barra in alto
+         */
+        protected void onPostExecute(final Drawable avatar) {
+            try {
+                dismissDialog(DIALOG_LOAD_USER_AVATAR);
+            } catch (Exception e) {
+                Log.e(this.TAG, "Impossibile dismettere dialog DIALOG_LOAD_USER_AVATAR", e);
+            }
+            if(avatar!=null){                   
+                /*
+                 *Passa nel ciclo dell'onPreparateOptionsMenu
+                 */
+                app.setMyAvatar(avatar);
+                invalidateOptionsMenu();
+            }
+            else{
+                showToast("Impossibile scaricare l'avatar");
+            }
+            
+        }
+    }
+    
+    /**
+     * Permette di repereire le info utente
+     */
+    private class UserInfoLoaderAsyncTask extends AsyncTask<Void, Void, Member>{
+        private  final String TAG = "UserInfoLoaderAsyncTask";
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            showDialog(DIALOG_LOAD_USER_DATA);
+        }
+        
+        @Override
+        protected Member doInBackground(Void... params) {
+            try {
+                return getMemberMe();
+            } catch (Exception e) {
+                Log.e(this.TAG, "Impossibile ottenere memberMe. Token:"+getMyToken()+" ConsumerKey"+Const.CONSUMER_KEY,e);
+                return null;
+            }
+        }
+        /**
+         * Devo aggiornare le info mostrate sulla action bar
+         */
+        protected void onPostExecute(final Member me) {
+            try {
+                dismissDialog(DIALOG_LOAD_USER_DATA);
+            } catch (Exception e) {
+                Log.e(this.TAG,"Impossibile dismettere la dialog DIALOG_LOAD_USER_DATA",e);
+            }
+            if(me!=null){    
+                
+                app.setMyMemberId(me.getId());
+                updateUserOnActionBar(me);
+                avatarLoader.execute(me.getAvatarHash());
+            }else{
+                
+                showToast("Impossibile scaricare le info dell'utente");
+            }
+        }
+    }
+    
+    /**
+     * AsyncTask per ottenere la board
+     */
+    private class BoardListsLoaderAsyncTask extends AsyncTask<Board, Void, Board> {
+
+        private  final String TAG = "BoardListsLoaderAsyncTask";
+        
+        @Override
+        protected void onPreExecute() {
+            
+            super.onPreExecute();
+            showDialog(DIALOG_LOAD_USER_BOARD);
+        }
+
+        @Override
+        protected Board doInBackground(Board... params) {
+            if(params.length<1){
+                Log.e(this.TAG, "Occorre fornire almeno una board per ottenerne le lists");
+            }
+            
+            Board board=params[0];
+            try{
+                board = getBoardWithLists(board); 
+            }catch (Exception e) {
+                Log.e(TAG, "Impossibile ottenere le lists dell'utente. BoardId:"+board.getId()+" Token:"+getMyToken()+" ConsumerKey"+Const.CONSUMER_KEY,e);
+            }
+            return board;
+        }
+
+        protected void onPostExecute(Board board) {
+            try {
+                dismissDialog(DIALOG_LOAD_USER_BOARD);
+            } catch (Exception e) {
+                Log.e(this.TAG,"Impossibile dismettere la dialog DIALOG_LOAD_USER_BOARD",e);
+            }
+            if(board!=null){
+                Intent intent = new Intent();
+            
+                intent.setClass(HomeActivity.this, BoardActivity.class);
+                intent.putExtra("title",board.getName());
+                intent.putExtra("board", board);
+                intent.putExtra("boardId", board.getId());
+                startActivity(intent);
+            }else{
+                showToast("Impossibile scaricare le lists della board");
+            }
+            
+        }           
+
+    }
+    /**
+     * AsyncTask per ottenere le board dell'utente che ha il token registrato
+     */
+    private class UserBoardsLoaderAsyncTask extends AsyncTask<Void, Void, ArrayList<Board>>{
+            
+        private static final String TAG = "UserBoardsLoaderAsyncTask";
+        @Override
+        protected void onPreExecute() {
+            
+            super.onPreExecute();
+            showDialog(DIALOG_LOAD_USER_BOARDS);
+        }
+        @Override
+        protected ArrayList<Board> doInBackground(Void... params) {
+           
+            try {
+                return getMyBoards();
+            } catch (Exception e) {
+                Log.e(TAG, "Impossibile ottenere boards utente. Token:"+getMyToken()+" ConsumerKey"+Const.CONSUMER_KEY,e);
+                //showToast("Impossibile scaricare le boards dell'utente");
+                
+                return new ArrayList<Board>();
+            }
+        }
+        /**
+         * Mostro in lista le boards ottenute
+         */
+        protected void onPostExecute(final ArrayList<Board> boards) {
+            try {
+                dismissDialog(DIALOG_LOAD_USER_BOARDS);
+            } catch (Exception e) {
+                Log.e(this.TAG, "Impossibile dismettere dialog DIALOG_LOAD_USER_BOARDS", e);
+            }
+            app.setBoards(boards);
+            
+            ListView boardsListView=(ListView)findViewById(R.id.boardsListView);
+            setBoardsListView(boards, boardsListView);
+            userInfoLoader.execute();
+            
+        }
+                    
+
+    }
+    
+    private class HomeActivityTasks{
+        
+    }
 }
