@@ -50,7 +50,7 @@ public class SplashScreenActivity extends Activity {
 	private final static String key = "9bd5f87e01424e4cae086ea481513c86";
 	public final static String testKey = "1b59bc31a7420d12ce644d7d822161a2";
 	public final static String testToken = "a30c5f4656e4003a9a84c36a25fda4f8152d3069c39a356d915cb0dcbc094e72";
-	
+	TrelloidApplication app=TrelloidApplication.getInstance();
 	
 //	public static final String TRELLOID_TOKEN = "aq.trelloid.token";
 //    private static final String TRELLOID_SECRET = "aq.trelloid.secret";
@@ -59,7 +59,7 @@ public class SplashScreenActivity extends Activity {
     
    
     /**
-     * QUeste sono del mio account, pprovate a cambiarle con il vostro
+     * QUeste sono del mio account, provate a cambiarle con il vostro
      */
 //    public static final String CONSUMER_KEY="0f67a93d8fd77b03601a79c0b8773ef7";
 //    private static final String CONSUMER_SECRET="2b6b7c10123436e30aecd2a43a28ec8d4db4bc9132164e9b110ab279238af27d";
