@@ -80,9 +80,9 @@ public class HomeActivity extends FragmentActivity {
 	private static final int DIALOG_PROGRESS = 0;
 	private static final int DIALOG_LOAD_USER_DATA = 1;
 	private static final int DIALOG_TEST_TOKEN = 2;
-	 public static final int DIALOG_LOAD_USER_BOARD = 3;
-	 public static final int DIALOG_LOAD_USER_BOARDS = 4;
-	 public static final int DIALOG_LOAD_USER_AVATAR = 5;
+	public static final int DIALOG_LOAD_USER_BOARD = 3;
+	public static final int DIALOG_LOAD_USER_BOARDS = 4;
+	public static final int DIALOG_LOAD_USER_AVATAR = 5;
 	
 	private static final String TAG="HomeActivity";
  
@@ -91,6 +91,8 @@ public class HomeActivity extends FragmentActivity {
 	private LoadAvatarAsyncTask avatarLoader=null;
 	private UserInfoLoaderAsyncTask userInfoLoader=null;
 	private UserBoardsLoaderAsyncTask userBoardsLoader=null;
+
+    private boolean trelloidWantsToShowADialog;
 	
 	
 	private static int THEME = R.style.Theme_Trelloid;
@@ -110,11 +112,24 @@ public class HomeActivity extends FragmentActivity {
         this.userInfoLoader=new UserInfoLoaderAsyncTask();
         this.userBoardsLoader=new UserBoardsLoaderAsyncTask();
         
-        tokenTester.execute();
+        
 	}
 	
-	
-	/**
+	@Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        if(!app.isAuthenticated()||!(app.isMeLoaded()&&app.isBoardsLoaded())){
+            tokenTester.execute();
+        }else{
+            //Devo solo ripristinare i dati sullo schermo
+            ListView boardsListView=(ListView)findViewById(R.id.boardsListView);
+            setBoardsListView(app.getBoards(), boardsListView);
+            updateUserOnActionBar(app.getMember(app.getMyMemberId()));                        
+        }
+        
+    }
+
+    /**
 	 * Aggiorna i dati mostrati nella actionBar con quelli contenuti nel Member this.me
 	 */
 	private void updateUserOnActionBar(Member me) {
@@ -122,7 +137,6 @@ public class HomeActivity extends FragmentActivity {
 		if(me==null){
 			actionBar.setTitle("Loading..");
 			actionBar.setSubtitle(" ");
-	        //actionBar.setDisplayHomeAsUpEnabled(true);
 			}
 		else{
 			actionBar.setTitle(me.getUsername());
@@ -187,7 +201,9 @@ public class HomeActivity extends FragmentActivity {
 				bitmapOrg = BitmapFactory.decodeResource(getResources(),R.drawable.sample_avatar);
 			}
 	    }else{
-	    	bitmapOrg = BitmapFactory.decodeResource(getResources(),R.drawable.loading_avatar);
+	    	ImageView img=new ImageView(getApplicationContext());
+	        img.setImageBitmap( BitmapFactory.decodeResource(getResources(),R.drawable.loading_avatar));
+	        return img.getDrawable();
 	    }
 
 		int borderSize = 5;
@@ -222,12 +238,19 @@ public class HomeActivity extends FragmentActivity {
 	  * Prende in carico la  gestione dell'autenticazione
 	  */
 	public void doAuthTrello(){
-		
-       TrelloHandle handler = new TrelloHandle(this,getApplicationContext(), Const.CONSUMER_KEY, Const.CONSUMER_SECRET);
+		//Questo viene invocato solo se l'autenticazione ha avuto successo
+       TrelloHandle handler = new TrelloHandle(this,getApplicationContext(), Const.CONSUMER_KEY, Const.CONSUMER_SECRET,new AjaxCallback<JSONObject>(){
+
+            @Override
+            public void callback(String arg0, JSONObject arg1, AjaxStatus arg2) {
+                app.setAuthenticated(true);
+                userBoardsLoader.execute();
+            }
+           
+       });
        handler.setAppName(Const.APP_NAME);
        handler.setScope(PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getString(MainPreferencesActivity.AUTH_TYPE_PREF, "read,write"));
        handler.setExpiration(PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getString(MainPreferencesActivity.AUTH_EXPIRE_PREF, "30days"));
-       
        String url = "https://trello.com/1/connect?key="+Const.CONSUMER_KEY+"&response_type=fragment";
        AQuery aq = new AQuery(HomeActivity.this);
        authDialog=new ProgressDialog(this);
@@ -237,23 +260,48 @@ public class HomeActivity extends FragmentActivity {
        authDialog.setCanceledOnTouchOutside(true);
        authDialog.setTitle("Loading..");
        authDialog.setMessage("Autenticazione con il server Trello in corso.."); 
+       trelloidWantsToShowADialog=true;
        
-       aq.auth(handler).progress(authDialog).ajax(url, JSONObject.class, new AjaxCallback<JSONObject>(){
+       aq.auth(handler).progress(authDialog).
+       ajax(url, JSONObject.class, new AjaxCallback<JSONObject>(){
     	   /**
     	    * Diciamo che l'autenticazione ha avuto successo. Devo scaricare le boards, l'avatar e i dati utente
     	    */
     	   @Override
 		public void callback(String url, JSONObject jsnObj, AjaxStatus status) {
 			super.callback(url, jsnObj, status);
+			//FIXME: In realtà il procedimento di autenticazione non è proprio esatto.. arrivo qui con status 401! 
+			//Andrebbe realizzata l'autenticazione con un altra libreria?
+			 String token=PreferenceManager.getDefaultSharedPreferences(HomeActivity.this).getString(TrelloidApplication.TRELLOID_TOKEN, null);
+			if(token!=null){
+			    app.setAuthenticated(true);
+			    userBoardsLoader.execute();
+			}else{
+			    //FIXME: ANdrebbe data una via di uscita elegante per scegliere se uscire dall'app o riprovare l'autenticazione
+			    //showToast("Non si è autenticati.. Il processo di autenticazione verrà rieseguito.");
+			    //FIXME: Può succedere che risultiamo no nautenticati anche se un procedimento è andato a buon fine, visto l'asincronicità
+			    //Occorre gestire un handler sull'autenticazione nel trelloHandle
+			    //doAuthTrello();
+			}
 			
-			userBoardsLoader.execute();
 			
     	   }
-       });     
+    	   
+       }); 
+       
+       
        
 	}
 	
-	/**
+	
+	
+	@Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // TODO Auto-generated method stub
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    /**
 	 * Metodo esemplicativo per mostrare un toast per ogni mia board
 	 * @param view
 	 */
@@ -343,6 +391,10 @@ public class HomeActivity extends FragmentActivity {
     * Gestisce le dialog che si possono aprire
     */
    protected Dialog onCreateDialog(int id) {
+       if(this.trelloidWantsToShowADialog==false){
+           return null;
+       }
+       trelloidWantsToShowADialog=false;
        switch(id) {
        case DIALOG_PROGRESS:
        	 dialog= ProgressDialog.show(HomeActivity.this,"","Caricamento in corso...");
@@ -387,13 +439,13 @@ public class HomeActivity extends FragmentActivity {
  * @param boardsListView
  */
 private void setBoardsListView(final ArrayList<Board> boards, ListView boardsListView) {
-    final BoardListsLoaderAsyncTask boardListsLoader=new BoardListsLoaderAsyncTask();
     boardsListView.setAdapter(new BoardsAdapter(getApplicationContext(), R.layout.boardlist_item, R.id.boardDescription, boards, HomeActivity.this));
     boardsListView.setOnItemClickListener(new OnItemClickListener() {
         /**
          * Sul click sulla board devo scaricarne i dati per passarla al metodo successivo
          */
         public void onItemClick(AdapterView<?> parent, View item, int position, long id) {
+            BoardListsLoaderAsyncTask boardListsLoader=new BoardListsLoaderAsyncTask();
             boardListsLoader.execute(boards.get(position));       
             }
         });
@@ -411,14 +463,12 @@ private void setBoardsListView(final ArrayList<Board> boards, ListView boardsLis
         protected void onPreExecute() {
             
             super.onPreExecute();
-            showDialog(DIALOG_TEST_TOKEN);
+            showTrelloDialog(DIALOG_TEST_TOKEN);
         }
     
         @Override
         protected Boolean doInBackground(Void... params) {
-            if(app.isAuthenticated()){
-                return true;
-            }
+            
             URL url=null;
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(HomeActivity.this);
             try {             
@@ -463,13 +513,8 @@ private void setBoardsListView(final ArrayList<Board> boards, ListView boardsLis
             }
             if(valid!=null&&valid.booleanValue()==true){   
                 app.setAuthenticated(true);
-                if(app.isMeLoaded()&&app.isBoardsLoaded()){
-                    ListView boardsListView=(ListView)findViewById(R.id.boardsListView);
-                    setBoardsListView(app.getBoards(), boardsListView);
-                    updateUserOnActionBar(app.getMember(app.getMyMemberId()));                        
-                }else{
-                    userBoardsLoader.execute();
-                }
+                userBoardsLoader.execute();
+                
             }
             else{
                 doAuthTrello();
@@ -493,7 +538,7 @@ private void setBoardsListView(final ArrayList<Board> boards, ListView boardsLis
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            showDialog(DIALOG_LOAD_USER_AVATAR);
+            showTrelloDialog(DIALOG_LOAD_USER_AVATAR);
         }
         @Override
         protected Drawable doInBackground(String... params) {
@@ -540,7 +585,7 @@ private void setBoardsListView(final ArrayList<Board> boards, ListView boardsLis
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            showDialog(DIALOG_LOAD_USER_DATA);
+            showTrelloDialog(DIALOG_LOAD_USER_DATA);
         }
         
         @Override
@@ -584,7 +629,7 @@ private void setBoardsListView(final ArrayList<Board> boards, ListView boardsLis
         protected void onPreExecute() {
             
             super.onPreExecute();
-            showDialog(DIALOG_LOAD_USER_BOARD);
+            showTrelloDialog(DIALOG_LOAD_USER_BOARD);
         }
 
         @Override
@@ -633,7 +678,7 @@ private void setBoardsListView(final ArrayList<Board> boards, ListView boardsLis
         protected void onPreExecute() {
             
             super.onPreExecute();
-            showDialog(DIALOG_LOAD_USER_BOARDS);
+            showTrelloDialog(DIALOG_LOAD_USER_BOARDS);
         }
         @Override
         protected ArrayList<Board> doInBackground(Void... params) {
@@ -666,8 +711,16 @@ private void setBoardsListView(final ArrayList<Board> boards, ListView boardsLis
                     
 
     }
-    
-    private class HomeActivityTasks{
-        
+    /**
+     * Workaround per gestire problemi di dismiss dialog nella rotazione del dispositivo.
+     * Provare a passare alle FragmentDialog
+     * @param dialogId
+     */
+    public void showTrelloDialog(int dialogId){
+        // http://stackoverflow.com/questions/891451/android-dismissdialog-does-not-dismiss-the-dialog
+        this.trelloidWantsToShowADialog=true;
+        showDialog(dialogId);
     }
+    
+    
 }
