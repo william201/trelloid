@@ -16,6 +16,8 @@ import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+//Classe da cancellare
+@Deprecated
 public class ContainerAdapter extends ArrayAdapter<CardContainer> {
 
 	private Context context;

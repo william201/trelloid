@@ -4,10 +4,12 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.zip.DataFormatException;
+
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 import android.util.Log;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TrelloToken implements Serializable{
 	/**
 	 * 

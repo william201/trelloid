@@ -22,6 +22,8 @@ import android.widget.ArrayAdapter;
 
 import com.androidquery.callback.AjaxStatus;
 
+//Classe da cancellare
+@Deprecated
 public class TrelloidActivity extends ListActivity {
 	private static final String serverTrello = "https://api.trello.com";
 	private String testKey = "5ab5ad43320989a74b677ab82a349db2";

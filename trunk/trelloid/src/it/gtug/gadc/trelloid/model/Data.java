@@ -6,7 +6,11 @@ import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Data implements Serializable {
-	private String text;
+	/**
+     * serialVersionUID generated for Class
+     */
+    private static final long serialVersionUID = 5404746793293879318L;
+    private String text;
 
 	public String getText() {
 		return text;

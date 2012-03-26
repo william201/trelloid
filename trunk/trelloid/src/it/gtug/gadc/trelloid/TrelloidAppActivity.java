@@ -6,7 +6,6 @@ package it.gtug.gadc.trelloid;
 
 import it.gtug.gadc.trelloid.auth.TrelloHandle;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.androidquery.AQuery;
@@ -21,13 +20,11 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-/**
- * @author fabrizio
- */
+//Classe da cancellare
+@Deprecated
 public class TrelloidAppActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
