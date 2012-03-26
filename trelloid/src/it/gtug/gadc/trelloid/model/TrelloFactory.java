@@ -3,7 +3,7 @@ package it.gtug.gadc.trelloid.model;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+@Deprecated
 public class TrelloFactory {
 
 	public static BoardContainer allocate(Class<BoardContainer> class1,

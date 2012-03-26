@@ -2,6 +2,9 @@ package it.gtug.gadc.trelloid.services;
 
 import it.gtug.gadc.trelloid.model.Board;
 import it.gtug.gadc.trelloid.model.CardContainer;
+import it.gtug.gadc.trelloid.model.Checklist;
+import it.gtug.gadc.trelloid.model.Member;
+import it.gtug.gadc.trelloid.model.Organization;
 
 import java.util.List;
 
@@ -30,9 +33,29 @@ public interface BoardService {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{boardid}/lists")
     List<CardContainer> findListsForBoardPubs(@PathParam("boardid") String boardid, @QueryParam("key") String key);
+    //TODO: da cambiare in List<ListSimple>
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{boardid}")
     Board getBoard(@PathParam("boardid") String boardid, @QueryParam("key") String key, @QueryParam("token") String token);
+    
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{boardid}/checklists")
+    List<Checklist> listChecklists(@PathParam("boardid") String boardid, @QueryParam("key") String key);
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{boardid}/members")
+    List<Member> listMembers(@PathParam("boardid") String boardid, @QueryParam("key") String key);
+ 
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{boardid}/organization")
+    Organization getOrganization(@PathParam("boardid") String boardid, @QueryParam("key") String key);
+ 
+    
 }
+
+
