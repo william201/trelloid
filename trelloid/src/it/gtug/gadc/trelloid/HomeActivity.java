@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.text.html.HTMLDocument.HTMLReader.ParagraphAction;
+//import javax.swing.text.html.HTMLDocument.HTMLReader.ParagraphAction;
 
 import org.jboss.resteasy.client.ClientResponseFailure;
 import org.jboss.resteasy.client.ProxyFactory;
@@ -270,7 +270,7 @@ public class HomeActivity extends FragmentActivity {
     	   @Override
 		public void callback(String url, JSONObject jsnObj, AjaxStatus status) {
 			super.callback(url, jsnObj, status);
-			//FIXME: In realtà il procedimento di autenticazione non è proprio esatto.. arrivo qui con status 401! 
+			//FIXME: In realtï¿½ il procedimento di autenticazione non ï¿½ proprio esatto.. arrivo qui con status 401! 
 			//Andrebbe realizzata l'autenticazione con un altra libreria?
 			 String token=PreferenceManager.getDefaultSharedPreferences(HomeActivity.this).getString(TrelloidApplication.TRELLOID_TOKEN, null);
 			if(token!=null){
@@ -278,8 +278,8 @@ public class HomeActivity extends FragmentActivity {
 			    userBoardsLoader.execute();
 			}else{
 			    //FIXME: ANdrebbe data una via di uscita elegante per scegliere se uscire dall'app o riprovare l'autenticazione
-			    //showToast("Non si è autenticati.. Il processo di autenticazione verrà rieseguito.");
-			    //FIXME: Può succedere che risultiamo no nautenticati anche se un procedimento è andato a buon fine, visto l'asincronicità
+			    //showToast("Non si ï¿½ autenticati.. Il processo di autenticazione verrï¿½ rieseguito.");
+			    //FIXME: Puï¿½ succedere che risultiamo no nautenticati anche se un procedimento ï¿½ andato a buon fine, visto l'asincronicitï¿½
 			    //Occorre gestire un handler sull'autenticazione nel trelloHandle
 			    //doAuthTrello();
 			}
@@ -355,7 +355,7 @@ public class HomeActivity extends FragmentActivity {
 		return service.findBoardsWichHeIsMember(Const.CONSUMER_KEY,getMyToken());
 	}
 	
-	//TODO: Troviamo una collocazione accessibile da più parti per questi metodi? CI vorrebbe un Service del Service XD
+	//TODO: Troviamo una collocazione accessibile da piï¿½ parti per questi metodi? CI vorrebbe un Service del Service XD
 	/**
 	 * Recupera il member a cui fa capo il token di autenticazione
 	 * @return
@@ -369,7 +369,7 @@ public class HomeActivity extends FragmentActivity {
 		}
 		
 
-//		Si può pensare di utilizzare la cache? COme si gestisce l'eventuale logout??
+//		Si puï¿½ pensare di utilizzare la cache? COme si gestisce l'eventuale logout??
 		
 //		Map<String, Member> membersCache = application.getMembersCache();
 //		Member member = membersCache.get(idMemberCreator);
@@ -474,7 +474,7 @@ private void setBoardsListView(final ArrayList<Board> boards, ListView boardsLis
             try {             
                 url = new URL(Const.HTTPS_API_TRELLO_COM+"/1/tokens/"+settings.getString(TrelloidApplication.TRELLOID_TOKEN, "blank")+"?key="+Const.CONSUMER_KEY);
             } catch (Exception e) {
-                Log.e(TAG, "Impossibile determinare validità token:"+url,e);
+                Log.e(TAG, "Impossibile determinare validitï¿½ token:"+url,e);
                 return null;
             }
             Integer responseCode=null;
@@ -486,7 +486,7 @@ private void setBoardsListView(final ArrayList<Board> boards, ListView boardsLis
                 Log.e(TAG, "Impossibile ricavare lo stato della connessione http all'url: "+url);
                 return false;
             }
-            //FIXME: In realtà dovrei testare la validità dell'expiration.
+            //FIXME: In realtï¿½ dovrei testare la validitï¿½ dell'expiration.
             //Per ora mi basta che il server NON risponda 401(Unauthorized) ma solo un codice di successo 2xx
             if(responseCode >=200&&responseCode<300){
                 Log.i(TAG, "Token valido: "+url);
