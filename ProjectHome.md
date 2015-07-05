@@ -1,0 +1,1 @@
+Trelloid is a project started during GADC 2012 in Florence.
